@@ -156,14 +156,9 @@ function Index() {
   const [opms, setOpms] = useState<OpmRecord[]>([]);
   const [tabelaErro, setTabelaErro] = useState("");
   const [inicio, setInicio] = useState("");
-  const [fim, setFim] = useState("");
   const [relatorioUrl, setRelatorioUrl] = useState("");
   const [erro, setErro] = useState("");
   const [carregando, setCarregando] = useState(false);
-  const fimCalculado = useMemo(() => {
-    if (inicio.length < 5) return "";
-    return `${inicio.slice(0, 5)}9999`;
-  }, [inicio]);
   const codigoOpm = inicio.length === 9 ? inicio : "";
   const opmSelecionada = useMemo(() => inicio.length === 9 ? opms.find((opm) => opm.codigo === codigoOpm) : undefined, [opms, codigoOpm]);
   const sugestoes = useMemo(() => inicio ? opms.filter((opm) => opm.codigo.startsWith(inicio)).slice(0, 8) : [], [opms, inicio]);
@@ -175,17 +170,65 @@ function Index() {
   function handleConsultar() {
     setErro("");
     setRelatorioUrl("");
-    if (!/^\d{5,9}$/.test(inicio)) { setErro("Digite o código da unidade com 5 a 9 dígitos."); return; }
-    const codigo = inicio.length === 5 ? inicio + "0000" : inicio;
-    if (!/^\d{9}$/.test(codigo)) { setErro("Informe um código de OPM válido com 9 dígitos."); return; }
-    if (!opmSelecionada) { setErro("A unidade informada não está cadastrada entre as OPMs ativas."); return; }
-    const url = montarUrlSipl(codigo);
-    if (!url) { setErro("Não foi possível montar o endereço do SIPL."); return; }
-    setInicio(codigo);
-    setFim(codigo.slice(0, 5) + "9999");
+
+    if (!/^\\d{9}$/.test(inicio)) {
+      setErro("Digite o código exato da unidade com 9 dígitos.");
+      return;
+    }
+
+    if (!opmSelecionada) {
+      setErro("A unidade informada não está cadastrada entre as OPMs ativas. Confira o código.");
+      return;
+    }
+
+    const url = montarUrlSipl(inicio);
+    if (!url) {
+      setErro("Não foi possível montar o endereço do SIPL.");
+      return;
+    }
+
     setCarregando(true);
     setRelatorioUrl(url);
     setTimeout(() => setCarregando(false), 400);
+  }
+
+  async function baixarPdfSipl() {
+    if (!relatorioUrl) return;
+
+    setErro("");
+    setCarregando(true);
+
+    try {
+      const response = await fetch(relatorioUrl, {
+        method: "GET",
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        throw new Error("O SIPL não permitiu o download automático do relatório.");
+      }
+
+      const contentType = response.headers.get("content-type") ?? "";
+      if (!contentType.toLowerCase().includes("pdf")) {
+        throw new Error("O retorno do SIPL não foi identificado como PDF.");
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = "Consulta-LCM-" + inicio + ".pdf";
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch {
+      // Se o SIPL bloquear fetch/CORS, mantém o acesso direto ao relatório.
+      window.open(relatorioUrl, "_blank", "noopener,noreferrer");
+      setErro("O SIPL abriu o relatório em uma nova aba porque o navegador bloqueou o download automático.");
+    } finally {
+      setCarregando(false);
+    }
   }
 
   function abrirRelatorio() {
@@ -212,27 +255,23 @@ function Index() {
             <p className="mx-auto mt-4 max-w-[590px] text-[15px] leading-6 text-[#5f6368]">Informe o código da unidade e faça a consulta. O relatório é consultado diretamente no SIPL pela rede interna.</p>
 
             <div className="mt-9 rounded-[28px] border border-[#dadce0] bg-white p-3 shadow-[0_2px_8px_rgba(60,64,67,.08)] sm:p-4">
-              <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto]">
+              <div className="grid gap-3 md:grid-cols-[1fr_auto]">
                 <label className="text-left">
-                  <span className="mb-1.5 ml-3 block text-[12px] font-medium text-[#5f6368]">Código inicial</span>
+                  <span className="mb-1.5 ml-3 block text-[12px] font-medium text-[#5f6368]">Código da unidade</span>
                   <div className="relative">
-                    <input value={inicio} onChange={(event) => { const value = event.target.value.replace(/\D/g, "").slice(0, 9); setInicio(value); setFim(value.length >= 5 ? value.slice(0, 5) + "9999" : ""); setErro(""); }} onKeyDown={(event) => { if (event.key === "Enter") void handleConsultar(); }} inputMode="numeric" maxLength={9} placeholder="201000000" aria-label="Código inicial da OPM" className="h-[54px] w-full rounded-[16px] border border-[#dadce0] bg-[#f8f9fa] px-4 pr-12 font-mono text-[16px] font-medium tracking-[.04em] text-[#202124] outline-none transition placeholder:text-[#9aa0a6] hover:border-[#bdc1c6] focus:border-[#1a73e8] focus:bg-white focus:ring-4 focus:ring-[#1a73e8]/10" />
+                    <input value={inicio} onChange={(event) => { const value = event.target.value.replace(/\D/g, "").slice(0, 9); setInicio(value); setErro(""); }} onKeyDown={(event) => { if (event.key === "Enter") void handleConsultar(); }} inputMode="numeric" maxLength={9} placeholder="201008220" aria-label="Código exato da OPM" className="h-[54px] w-full rounded-[16px] border border-[#dadce0] bg-[#f8f9fa] px-4 pr-12 font-mono text-[16px] font-medium tracking-[.04em] text-[#202124] outline-none transition placeholder:text-[#9aa0a6] hover:border-[#bdc1c6] focus:border-[#1a73e8] focus:bg-white focus:ring-4 focus:ring-[#1a73e8]/10" />
                     <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[11px] text-[#9aa0a6]">{inicio.length}/9</span>
                   </div>
                   {inicio.length === 9 && <div className={"mt-2.5 rounded-[14px] px-3.5 py-2.5 text-left text-[12px] " + (opmSelecionada ? "bg-[#e6f4ea] text-[#137333]" : "bg-[#fef7e0] text-[#b06000]")}>{opmSelecionada ? <span><strong className="font-semibold">{opmSelecionada.codigo}</strong><span className="mx-1.5 opacity-50">•</span>{opmSelecionada.nome}</span> : "Código não localizado entre as unidades ativas."}</div>}
                 </label>
 
-                <label className="text-left">
-                  <span className="mb-1.5 ml-3 block text-[12px] font-medium text-[#5f6368]">Código final</span>
-                  <input value={fim || fimCalculado} onChange={(event) => { setFim(event.target.value.replace(/\D/g, "").slice(0, 9)); setErro(""); }} inputMode="numeric" maxLength={9} placeholder="201009999" aria-label="Código final da OPM" className="h-[54px] w-full rounded-[16px] border border-[#dadce0] bg-[#f8f9fa] px-4 font-mono text-[16px] font-medium tracking-[.04em] text-[#202124] outline-none transition placeholder:text-[#9aa0a6] hover:border-[#bdc1c6] focus:border-[#1a73e8] focus:bg-white focus:ring-4 focus:ring-[#1a73e8]/10" />
-                  <p className="mt-2 ml-3 text-[11px] text-[#80868b]">Você pode alterar este código.</p>
-                </label>
+
 
                 <button onClick={() => void handleConsultar()} disabled={carregando} className="h-[54px] rounded-[16px] bg-[#1a73e8] px-6 text-[14px] font-medium text-white transition hover:bg-[#1769d1] active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-50 md:mt-[22px]">{carregando ? <span className="inline-flex items-center gap-2"><span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />Consultando</span> : "Consultar"}</button>
               </div>
 
-              {sugestoes.length > 0 && inicio.length < 5 && <div className="mt-2 overflow-hidden rounded-[16px] border border-[#dadce0] bg-white text-left shadow-[0_4px_12px_rgba(60,64,67,.12)]"><div className="px-4 py-2.5 text-[11px] font-medium uppercase tracking-wide text-[#80868b]">Unidades encontradas</div>{sugestoes.map((opm) => <button key={opm.codigo} type="button" onClick={() => { setInicio(opm.codigo); setFim(opm.codigo.slice(0, 5) + "9999"); }} className="flex w-full items-center justify-between border-t border-[#f1f3f4] px-4 py-3 text-left hover:bg-[#f8f9fa]"><span className="font-mono text-[13px] font-medium text-[#3c4043]">{opm.codigo}</span><span className="ml-4 truncate text-[13px] text-[#5f6368]">{opm.nome}</span></button>)}</div>}
-              <div className="mt-3 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 px-2 text-[11px] text-[#80868b]"><span>5 dígitos preenchem o intervalo automaticamente.</span><span className="hidden sm:inline">•</span><span>9 dígitos identificam a unidade.</span></div>
+              {sugestoes.length > 0 && inicio.length < 5 && <div className="mt-2 overflow-hidden rounded-[16px] border border-[#dadce0] bg-white text-left shadow-[0_4px_12px_rgba(60,64,67,.12)]"><div className="px-4 py-2.5 text-[11px] font-medium uppercase tracking-wide text-[#80868b]">Unidades encontradas</div>{sugestoes.map((opm) => <button key={opm.codigo} type="button" onClick={() => { setInicio(opm.codigo); }} className="flex w-full items-center justify-between border-t border-[#f1f3f4] px-4 py-3 text-left hover:bg-[#f8f9fa]"><span className="font-mono text-[13px] font-medium text-[#3c4043]">{opm.codigo}</span><span className="ml-4 truncate text-[13px] text-[#5f6368]">{opm.nome}</span></button>)}</div>}
+              <div className="mt-3 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 px-2 text-[11px] text-[#80868b]"><span>O código informado será usado exatamente como digitado no SIPL.</span><span className="hidden sm:inline">•</span><span>Digite os 9 dígitos exatos da unidade.</span></div>
             </div>
 
             {tabelaErro && <div className="mx-auto mt-4 max-w-[760px] rounded-[14px] border border-[#f4c7c3] bg-[#fce8e6] px-4 py-3 text-left text-[13px] text-[#c5221f]">{tabelaErro}</div>}
@@ -247,7 +286,10 @@ function Index() {
                   </div>
                   <p className="mt-2 pl-[38px] text-[12px] text-[#80868b]">{relatorioUrl ? <>Relatório carregado para a OPM <strong className="font-medium text-[#5f6368]">{inicio}</strong>. O conteúdo abaixo é retornado diretamente pelo SIPL.</> : "Após a consulta, o relatório do SIPL aparecerá aqui."}</p>
                 </div>
-                <button onClick={abrirRelatorio} disabled={!relatorioUrl || carregando} className="inline-flex h-[44px] items-center justify-center gap-2 rounded-[13px] border border-[#dadce0] bg-white px-5 text-[13px] font-medium text-[#3c4043] transition hover:bg-[#f8f9fa] hover:border-[#c7c9cc] active:scale-[.98] disabled:cursor-not-allowed disabled:bg-[#f1f3f4] disabled:text-[#9aa0a6]">Abrir relatório</button>
+                <div className="flex flex-wrap gap-2">
+                  <button onClick={() => void baixarPdfSipl()} disabled={!relatorioUrl || carregando} className="inline-flex h-[44px] items-center justify-center gap-2 rounded-[13px] bg-[#1a73e8] px-5 text-[13px] font-medium text-white transition hover:bg-[#1769d1] active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-50">Baixar PDF</button>
+                  <button onClick={abrirRelatorio} disabled={!relatorioUrl || carregando} className="inline-flex h-[44px] items-center justify-center gap-2 rounded-[13px] border border-[#dadce0] bg-white px-5 text-[13px] font-medium text-[#3c4043] transition hover:bg-[#f8f9fa] hover:border-[#c7c9cc] active:scale-[.98] disabled:cursor-not-allowed disabled:bg-[#f1f3f4] disabled:text-[#9aa0a6]">Abrir relatório</button>
+                </div>
               </div>
               {relatorioUrl && (
                 <div className="mt-5 overflow-hidden rounded-[18px] border border-[#dadce0] bg-[#f1f3f4] shadow-[0_2px_8px_rgba(60,64,67,.08)]">
