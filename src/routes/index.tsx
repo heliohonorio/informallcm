@@ -169,6 +169,7 @@ function detectarColunaNome(rows: XlsxRow[], codigoCol?: string, situacaoCol?: s
   // Não usar campos organizacionais genéricos que podem retornar
   // valores como "ORG EXEC".
   const candidatos = localizarColuna(rows, [
+    "opmn03des",
     "opmn02des",
     "sigla", "sigladaopm", "siglaopm", "siglaunidade",
     "nome", "nomeopm", "nomeunidade", "unidade"
