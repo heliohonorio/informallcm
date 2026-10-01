@@ -20,11 +20,11 @@ function Index() {
   const [rows, setRows] = useState<Array<Record<string, unknown>>>([]);
   const [erro, setErro] = useState("");
   const [carregando, setCarregando] = useState(false);
-  const fimCalculado = useMemo(() => (inicio.length === 9 ? `${inicio.slice(0, 5)}9999` : ""), [inicio]);
+  const fimCalculado = useMemo(() => (inicio.length === 5 ? `${inicio}9999` : ""), [inicio]);
 
   async function handleConsultar() {
     setErro(""); setRows([]);
-    if (!/^\d{9}$/.test(inicio)) { setErro("Digite um patrimônio inicial com exatamente 9 dígitos."); return; }
+    if (!/^\d{5}$/.test(inicio)) { setErro("Digite o código da unidade com exatamente 5 dígitos."); return; }
     setCarregando(true);
     try {
       const result = await consultar({ data: { inicio } });
@@ -47,19 +47,19 @@ function Index() {
     <main className="min-h-screen bg-slate-950 text-slate-100"><div className="mx-auto max-w-7xl px-5 py-10">
       <header className="mb-8"><p className="text-sm font-semibold uppercase tracking-[0.22em] text-sky-400">SIPL • Consulta SQL</p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Consulta de patrimônios</h1>
-        <p className="mt-2 max-w-2xl text-slate-400">Informe o patrimônio inicial. O sistema mantém os primeiros 5 dígitos e completa automaticamente os 4 últimos com 9999.</p>
+        <p className="mt-2 max-w-2xl text-slate-400">Informe o código da unidade. Enquanto você digita os 5 primeiros dígitos, o sistema completa automaticamente o final com 9999.</p>
       </header>
       <section className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 shadow-xl">
         <div className="grid gap-4 md:grid-cols-[1fr_1fr_auto] md:items-end">
-          <label className="block"><span className="mb-2 block text-sm font-medium text-slate-300">Patrimônio inicial</span>
-            <input value={inicio} onChange={(event) => setInicio(event.target.value.replace(/\D/g, "").slice(0, 9))} onKeyDown={(event) => { if (event.key === "Enter") void handleConsultar(); }} inputMode="numeric" maxLength={9} placeholder="Ex.: 601030000" className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-lg font-mono outline-none focus:border-sky-500" />
+          <label className="block"><span className="mb-2 block text-sm font-medium text-slate-300">Código da unidade</span>
+            <input value={inicio} onChange={(event) => setInicio(event.target.value.replace(/\D/g, "").slice(0, 9))} onKeyDown={(event) => { if (event.key === "Enter") void handleConsultar(); }} inputMode="numeric" maxLength={5} placeholder="Ex.: 60103" className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-lg font-mono outline-none focus:border-sky-500" />
           </label>
-          <div><span className="mb-2 block text-sm font-medium text-slate-300">Patrimônio final automático</span>
+          <div><span className="mb-2 block text-sm font-medium text-slate-300">Código final automático</span>
             <div className="rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-lg font-mono text-sky-300">{fim || fimCalculado || "_________"}</div>
           </div>
           <button onClick={() => void handleConsultar()} disabled={carregando} className="rounded-xl bg-sky-500 px-6 py-3 font-semibold text-slate-950 transition hover:bg-sky-400 disabled:cursor-not-allowed disabled:opacity-60">{carregando ? "Consultando..." : "Consultar"}</button>
         </div>
-        <div className="mt-4 rounded-xl bg-slate-950/70 p-4 text-sm text-slate-400"><strong className="text-slate-200">Exemplo:</strong> 601030000 → 601039999. O sistema não altera os primeiros 5 dígitos.</div>
+        <div className="mt-4 rounded-xl bg-slate-950/70 p-4 text-sm text-slate-400"><strong className="text-slate-200">Exemplo:</strong> 60103 → 601039999. Os 5 dígitos informados identificam a unidade; o sistema acrescenta automaticamente 9999.</div>
         {erro && <div className="mt-4 rounded-xl border border-red-900/70 bg-red-950/40 p-4 text-sm text-red-300">{erro}</div>}
       </section>
       <section className="mt-6 overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80">
