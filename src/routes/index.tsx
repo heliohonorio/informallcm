@@ -34,7 +34,8 @@ function createPdf(rows: Array<Record<string, unknown>>, inicio: string, fim: st
     ];
     lines.push(values.map((value, index) => {
       const widths = [12, 10, 10, 10, 10, 10];
-      return value.slice(0, widths[index]).padEnd(widths[index], " ");
+      const width = widths[index] ?? 10;
+      return value.slice(0, width).padEnd(width, " ");
     }).join(" "));
   }
 
