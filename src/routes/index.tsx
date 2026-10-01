@@ -1,11 +1,10 @@
 import { useServerFn } from "@tanstack/react-start";
-import { useServerFn } from "@tanstack/react-start";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { consultarIntervalo } from "../lib/patrimonio.functions";
 
 export const Route = createFileRoute("/")({
-  head: () => ({ meta: [{ title: "Consulta de Patrimônios | SIPL" }] }),
+  head: () => ({ meta: [{ title: "Consulta LCM | SIPL" }] }),
   component: Index,
 });
 
@@ -41,13 +40,13 @@ function Index() {
     const csv = [headers.join(";"), ...rows.map((row) => headers.map((header) => `"${String(row[header] ?? "").replaceAll('"', '""')}"`).join(";"))].join("\n");
     const blob = new Blob(["\uFEFF", csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob); const anchor = document.createElement("a");
-    anchor.href = url; anchor.download = `patrimonios-${inicio}-a-${fim || fimCalculado}.csv`; anchor.click(); URL.revokeObjectURL(url);
+    anchor.href = url; anchor.download = `consulta-lcm-${inicio}-a-${fim || fimCalculado}.csv`; anchor.click(); URL.revokeObjectURL(url);
   }
 
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100"><div className="mx-auto max-w-7xl px-5 py-10">
       <header className="mb-8"><p className="text-sm font-semibold uppercase tracking-[0.22em] text-sky-400">SIPL • Consulta SQL</p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Consulta de patrimônios</h1>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Consulta LCM</h1>
         <p className="mt-2 max-w-2xl text-slate-400">Informe o código da unidade. Enquanto você digita os 5 primeiros dígitos, o sistema completa automaticamente o final com 9999.</p>
       </header>
       <section className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 shadow-xl">
