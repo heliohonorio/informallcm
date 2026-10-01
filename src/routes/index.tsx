@@ -134,6 +134,34 @@ function localizarColuna(rows: XlsxRow[], candidatos: string[]) {
   return Object.keys(primeira).find((key) => candidatos.includes(normalizarCabecalho(key)));
 }
 
+function detectarColunaCodigo(rows: XlsxRow[]) {
+  const candidatos = localizarColuna(rows, ["codigo", "codigodaopm", "opm", "codopm", "cod", "codigoopm"]);
+  if (candidatos) return candidatos;
+  return Object.keys(rows[0] ?? {}).find((key) => {
+    const values = rows.slice(0, 100).map((row) => normalizarCodigo(row[key])).filter(Boolean);
+    return values.length > 0 && values.filter((value) => /^\d{5}$/.test(value)).length >= Math.max(1, Math.floor(values.length * 0.6));
+  });
+}
+
+function detectarColunaSituacao(rows: XlsxRow[]) {
+  const candidatos = localizarColuna(rows, ["situacao", "status", "sit", "situacaodaopm", "situacaounidade", "ativo"]);
+  if (candidatos) return candidatos;
+  return Object.keys(rows[0] ?? {}).find((key) => {
+    const values = rows.slice(0, 200).map((row) => String(row[key] ?? "").trim().toUpperCase()).filter(Boolean);
+    return values.length > 0 && values.filter((value) => value === "A" || value === "I").length >= Math.max(1, Math.floor(values.length * 0.7));
+  });
+}
+
+function detectarColunaNome(rows: XlsxRow[], codigoCol?: string, situacaoCol?: string) {
+  const candidatos = localizarColuna(rows, ["nome", "nomeopm", "nomeunidade", "unidade", "descricao", "denominacao", "nomefantasia"]);
+  if (candidatos) return candidatos;
+  return Object.keys(rows[0] ?? {}).find((key) => {
+    if (key === codigoCol || key === situacaoCol) return false;
+    const values = rows.slice(0, 50).map((row) => String(row[key] ?? "").trim()).filter(Boolean);
+    return values.length > 0 && values.filter((value) => /[A-Za-zÀ-ÿ]/.test(value)).length >= Math.max(1, Math.floor(values.length * 0.7));
+  });
+}
+
 async function carregarTabelaOpm(): Promise<OpmRecord[]> {
   if (!window.XLSX) throw new Error("O leitor da tabela OPM ainda não foi carregado. Atualize a página e tente novamente.");
   const response = await fetch("/tabela%20OPM.xlsx", { cache: "no-store" });
@@ -142,10 +170,15 @@ async function carregarTabelaOpm(): Promise<OpmRecord[]> {
   const sheetName = workbook.SheetNames[0];
   const rows = window.XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: "" });
   if (!rows.length) throw new Error("A Tabela OPM está vazia.");
-  const codigoCol = localizarColuna(rows, ["codigo", "codigodaopm", "opm", "codopm", "cod"]);
-  const nomeCol = localizarColuna(rows, ["nome", "nomeopm", "nomeunidade", "unidade", "descricao", "denominacao"]);
-  const situacaoCol = localizarColuna(rows, ["situacao", "status", "sit", "situacaodaopm"]);
-  if (!codigoCol || !nomeCol || !situacaoCol) throw new Error("Não foi possível identificar as colunas Código, Nome e Situação na Tabela OPM.");
+
+  const codigoCol = detectarColunaCodigo(rows);
+  const situacaoCol = detectarColunaSituacao(rows);
+  const nomeCol = detectarColunaNome(rows, codigoCol, situacaoCol);
+
+  if (!codigoCol || !nomeCol || !situacaoCol) {
+    throw new Error("Não foi possível identificar automaticamente Código, Nome e Situação na Tabela OPM.");
+  }
+
   return rows
     .filter((row) => String(row[situacaoCol] ?? "").trim().toUpperCase() === "A")
     .map((row) => ({ codigo: normalizarCodigo(row[codigoCol]), nome: String(row[nomeCol] ?? "").trim() }))
