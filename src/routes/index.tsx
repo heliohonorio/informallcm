@@ -118,9 +118,31 @@ function localizarColuna(rows: XlsxRow[], candidatos: string[]) {
 }
 
 function detectarColunaCodigo(rows: XlsxRow[]) {
+  const colunas = Object.keys(rows[0] ?? {});
+  // Prioriza a coluna que realmente contém os códigos completos de 9 dígitos.
+  // Isso evita escolher uma coluna auxiliar com apenas os 5 primeiros dígitos
+  // (por exemplo, "OPM"), que faria 201008220 virar indevidamente 201000000.
+  const colunaComNoveDigitos = colunas
+    .map((key) => {
+      const valores = rows.slice(0, 500)
+        .map((row) => String(row[key] ?? "").trim().replace(/\D/g, ""))
+        .filter(Boolean);
+      const completos = valores.filter((value) => value.length === 9);
+      return {
+        key,
+        proporcao: valores.length ? completos.length / valores.length : 0,
+        quantidade: completos.length,
+      };
+    })
+    .filter((item) => item.quantidade >= 3 && item.proporcao >= 0.8)
+    .sort((a, b) => b.proporcao - a.proporcao || b.quantidade - a.quantidade)[0];
+
+  if (colunaComNoveDigitos) return colunaComNoveDigitos.key;
+
   const candidatos = localizarColuna(rows, ["codigo", "codigodaopm", "opm", "codopm", "cod", "codigoopm", "codigoopm"]);
   if (candidatos) return candidatos;
-  return Object.keys(rows[0] ?? {}).find((key) => {
+
+  return colunas.find((key) => {
     const values = rows.slice(0, 200).map((row) => normalizarCodigo(row[key])).filter(Boolean);
     const validos = values.filter((value) => /^\d{5,9}$/.test(value));
     return values.length >= 3 && validos.length / values.length >= 0.8;
