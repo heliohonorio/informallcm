@@ -1,23 +1,23 @@
-import type * as mssql from "mssql";
+import type * as mssqlTypes from "mssql";
 
-let poolPromise: Promise<sql.ConnectionPool> | undefined;
+let poolPromise: Promise<mssqlTypes.ConnectionPool> | undefined;
 
-function getConfig(): sql.config {
-  const server = process.env.SQL_SERVER ?? "bdcrpp1.policiamilitar.sp.gov.br";
-  const instanceName = process.env.SQL_INSTANCE ?? "ISTCRP1";
-  const port = process.env.SQL_PORT ? Number(process.env.SQL_PORT) : undefined;
+function getConfig(): mssqlTypes.config {
+  const server = process.env["SQL_SERVER"] ?? "bdcrpp1.policiamilitar.sp.gov.br";
+  const instanceName = process.env["SQL_INSTANCE"] ?? "ISTCRP1";
+  const port = process.env["SQL_PORT"] ? Number(process.env["SQL_PORT"]) : undefined;
 
-  const config: sql.config = {
+  const config: mssqlTypes.config = {
     server,
-    database: process.env.SQL_DATABASE ?? "BDCOrp",
-    user: process.env.SQL_USER,
-    password: process.env.SQL_PASSWORD,
+    database: process.env["SQL_DATABASE"] ?? "BDCOrp",
+    user: process.env["SQL_USER"],
+    password: process.env["SQL_PASSWORD"],
     connectionTimeout: 15000,
     requestTimeout: 60000,
     pool: { max: 5, min: 0, idleTimeoutMillis: 30000 },
     options: {
-      encrypt: process.env.SQL_ENCRYPT === "true",
-      trustServerCertificate: process.env.SQL_TRUST_SERVER_CERTIFICATE !== "false",
+      encrypt: process.env["SQL_ENCRYPT"] === "true",
+      trustServerCertificate: process.env["SQL_TRUST_SERVER_CERTIFICATE"] !== "false",
     },
   };
 
@@ -31,18 +31,18 @@ function getConfig(): sql.config {
 }
 
 async function getPool() {
-  if (!process.env.SQL_USER || !process.env.SQL_PASSWORD) {
+  if (!process.env["SQL_USER"] || !process.env["SQL_PASSWORD"]) {
     throw new Error("SQL Server não configurado. Cadastre SQL_USER e SQL_PASSWORD nos secrets do ambiente.");
   }
   if (!poolPromise) {
     const sql = (await import("mssql")).default;
-    poolPromise = sql.connect(getConfig()).catch((error) => { poolPromise = undefined; throw error; });
+    poolPromise = sql.connect(getConfig()).catch((error: unknown) => { poolPromise = undefined; throw error; });
   }
   return poolPromise;
 }
 
 export type PatrimonioRow = {
-  Patrimônio: string | number;
+  "Patrimônio": string | number;
   CLE: string | number | null;
   SCS: string | number | null;
   GRP: string | number | null;
