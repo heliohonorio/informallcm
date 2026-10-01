@@ -165,11 +165,12 @@ function detectarColunaNome(rows: XlsxRow[], codigoCol?: string, situacaoCol?: s
   // valor que deve ser mostrado ao lado do código. Não usar "descrição",
   // "denominação" ou campos organizacionais genéricos, pois eles podem
   // retornar valores como "ORG DIR SET" em vez de "DL".
-  // Na estrutura do SIPL, o campo OPMN02DES é a descrição/nome
+  // Na estrutura do SIPL, o campo OPMN05DES é a descrição/nome
   // específico da OPM e deve ser a fonte principal do nome exibido.
   // Não usar campos organizacionais genéricos que podem retornar
   // valores como "ORG EXEC".
   const candidatos = localizarColuna(rows, [
+    "opmn05des",
     "opmn04des",
     "opmn03des",
     "opmn02des",
