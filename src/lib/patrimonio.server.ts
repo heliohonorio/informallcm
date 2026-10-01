@@ -1,4 +1,4 @@
-import type * as mssql from "mssql";
+import type * as sql from "mssql";
 
 let poolPromise: Promise<sql.ConnectionPool> | undefined;
 
