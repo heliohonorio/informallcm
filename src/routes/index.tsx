@@ -160,26 +160,35 @@ function detectarColunaSituacao(rows: XlsxRow[]) {
   });
 }
 
-function detectarColunaNome(rows: XlsxRow[], codigoCol?: string, situacaoCol?: string) {
-  // A tabela possui uma identificação curta da unidade (sigla), que é o
-  // valor que deve ser mostrado ao lado do código. Não usar "descrição",
-  // "denominação" ou campos organizacionais genéricos, pois eles podem
-  // retornar valores como "ORG DIR SET" em vez de "DL".
-  // Na estrutura do SIPL, o campo OPMN05DES é a descrição/nome
-  // específico da OPM e deve ser a fonte principal do nome exibido.
-  // Não usar campos organizacionais genéricos que podem retornar
-  // valores como "ORG EXEC".
-  const candidatos = localizarColuna(rows, [
-    "opmn05des"
-  ]);
-  if (candidatos && candidatos !== codigoCol && candidatos !== situacaoCol) return candidatos;
-
+function detectarColunasNome(rows: XlsxRow[], codigoCol?: string, situacaoCol?: string) {
   const colunas = Object.keys(rows[0] ?? {});
-  return colunas.find((key) => {
-    if (key === codigoCol || key === situacaoCol) return false;
-    const values = rows.slice(0, 100).map((row) => String(row[key] ?? "").trim()).filter(Boolean);
-    return values.length >= 3 && values.filter((value) => /[A-Za-zÀ-ÿ]/.test(value)).length / values.length >= 0.7;
-  });
+
+  // A identificação da OPM é hierárquica. Os campos OPMNxxDES devem ser
+  // lidos em ordem numérica, da primeira coluna para a quinta, e depois
+  // concatenados somente quando houver conteúdo.
+  const hierarquia = colunas
+    .map((key, index) => {
+      const normalizado = normalizarCabecalho(key);
+      const match = normalizado.match(/^opmn(\d+)des$/);
+      return match ? { key, ordem: Number(match[1]), index } : null;
+    })
+    .filter((item): item is { key: string; ordem: number; index: number } => Boolean(item))
+    .filter((item) => item.key !== codigoCol && item.key !== situacaoCol)
+    .sort((a, b) => a.ordem - b.ordem || a.index - b.index)
+    .slice(0, 5)
+    .map((item) => item.key);
+
+  if (hierarquia.length) return hierarquia;
+
+  const fallback = localizarColuna(rows, ["opmn05des", "opmn04des", "opmn03des"]);
+  return fallback && fallback !== codigoCol && fallback !== situacaoCol ? [fallback] : [];
+}
+
+function montarNomeOpm(row: XlsxRow, colunasNome: string[]) {
+  return colunasNome
+    .map((coluna) => String(row[coluna] ?? "").trim())
+    .filter(Boolean)
+    .join(" - ");
 }
 
 function encontrarEstruturaOpm(workbook: { SheetNames: string[]; Sheets: Record<string, unknown> }) {
@@ -188,8 +197,8 @@ function encontrarEstruturaOpm(workbook: { SheetNames: string[]; Sheets: Record<
     if (!rows.length) continue;
     const codigoCol = detectarColunaCodigo(rows);
     const situacaoCol = detectarColunaSituacao(rows);
-    const nomeCol = detectarColunaNome(rows, codigoCol, situacaoCol);
-    if (codigoCol && situacaoCol && nomeCol) return { sheetName, rows, codigoCol, situacaoCol, nomeCol };
+    const nomeCols = detectarColunasNome(rows, codigoCol, situacaoCol);
+    if (codigoCol && situacaoCol && nomeCols.length) return { sheetName, rows, codigoCol, situacaoCol, nomeCols };
   }
   return null;
 }
@@ -202,10 +211,10 @@ async function carregarTabelaOpm(): Promise<OpmRecord[]> {
   const estrutura = encontrarEstruturaOpm(workbook);
   if (!estrutura) throw new Error("Não foi possível identificar as colunas Código, Nome e Situação na Tabela OPM.");
 
-  const { rows, codigoCol, situacaoCol, nomeCol } = estrutura;
+  const { rows, codigoCol, situacaoCol, nomeCols } = estrutura;
   const ativos = rows
     .filter((row) => String(row[situacaoCol] ?? "").trim().toUpperCase() === "A")
-    .map((row) => ({ codigo: normalizarCodigo(row[codigoCol]), nome: String(row[nomeCol] ?? "").trim() }))
+    .map((row) => ({ codigo: normalizarCodigo(row[codigoCol]), nome: montarNomeOpm(row, nomeCols) }))
     .filter((row) => /^\d{9}$/.test(row.codigo) && row.nome)
     .filter((row, index, array) => array.findIndex((item) => item.codigo === row.codigo) === index);
 
