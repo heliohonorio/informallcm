@@ -180,9 +180,13 @@ function Index() {
   const [rows, setRows] = useState<Array<Record<string, unknown>>>([]);
   const [erro, setErro] = useState("");
   const [carregando, setCarregando] = useState(false);
-  const fimCalculado = useMemo(() => (inicio.length === 5 ? `${inicio}9999` : ""), [inicio]);
-  const opmSelecionada = useMemo(() => opms.find((opm) => opm.codigo === inicio), [opms, inicio]);
-  const sugestoes = useMemo(() => inicio ? opms.filter((opm) => opm.codigo.startsWith(inicio)).slice(0, 8) : [], [opms, inicio]);
+  const fimCalculado = useMemo(() => {
+    if (inicio.length < 5) return "";
+    return `${inicio.slice(0, 5)}9999`;
+  }, [inicio]);
+  const codigoOpm = inicio.length >= 5 ? inicio.slice(0, 5) : inicio;
+  const opmSelecionada = useMemo(() => opms.find((opm) => opm.codigo === codigoOpm), [opms, codigoOpm]);
+  const sugestoes = useMemo(() => codigoOpm ? opms.filter((opm) => opm.codigo.startsWith(codigoOpm)).slice(0, 8) : [], [opms, codigoOpm]);
 
   useEffect(() => {
     void carregarTabelaOpm().then(setOpms).catch((error) => setTabelaErro(error instanceof Error ? error.message : "Erro ao carregar a Tabela OPM."));
@@ -190,11 +194,18 @@ function Index() {
 
   async function handleConsultar() {
     setErro(""); setRows([]);
-    if (!/^\d{5}$/.test(inicio)) { setErro("Digite o código da unidade com exatamente 5 dígitos."); return; }
+    if (!/^\d{5,9}$/.test(inicio)) { setErro("Digite o código inicial com 5 a 9 dígitos."); return; }
+    const inicioConsulta = inicio.length === 5 ? `${inicio}0000` : inicio;
+    const fimConsulta = fim || fimCalculado;
+    if (!/^\d{9}$/.test(inicioConsulta) || !/^\d{9}$/.test(fimConsulta)) {
+      setErro("Informe códigos inicial e final válidos, com até 9 dígitos.");
+      return;
+    }
     if (!opmSelecionada) { setErro("A unidade informada não está cadastrada entre as OPMs ativas."); return; }
+    if (Number(inicioConsulta) > Number(fimConsulta)) { setErro("O código inicial não pode ser maior que o código final."); return; }
     setCarregando(true);
     try {
-      const result = await consultar({ data: { inicio } });
+      const result = await consultar({ data: { inicio: inicioConsulta, fim: fimConsulta } });
       setFim(result.fim); setRows(result.rows as Array<Record<string, unknown>>);
     } catch (error) {
       setErro(error instanceof Error ? error.message : "Não foi possível consultar o SQL Server.");
@@ -222,14 +233,21 @@ function Index() {
       <section className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 shadow-xl">
         <div className="grid gap-4 md:grid-cols-[1fr_1fr_auto] md:items-end">
           <label className="block"><span className="mb-2 block text-sm font-medium text-slate-300">Código da unidade</span>
-            <input value={inicio} onChange={(event) => { setInicio(event.target.value.replace(/\D/g, "").slice(0, 5)); setErro(""); }} onKeyDown={(event) => { if (event.key === "Enter") void handleConsultar(); }} inputMode="numeric" maxLength={5} placeholder="Ex.: 60103" className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-lg font-mono outline-none focus:border-sky-500" />
+            <input value={inicio} onChange={(event) => {
+              const value = event.target.value.replace(/\D/g, "").slice(0, 9);
+              setInicio(value);
+              setFim(value.length >= 5 ? `${value.slice(0, 5)}9999` : "");
+              setErro("");
+            }} onKeyDown={(event) => { if (event.key === "Enter") void handleConsultar(); }} inputMode="numeric" maxLength={9} placeholder="Ex.: 601030000" className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-lg font-mono outline-none focus:border-sky-500" />
             {sugestoes.length > 0 && inicio.length < 5 && <div className="mt-2 overflow-hidden rounded-xl border border-slate-700 bg-slate-950 shadow-lg">{sugestoes.map((opm) => <button key={opm.codigo} type="button" onClick={() => setInicio(opm.codigo)} className="block w-full border-b border-slate-800 px-4 py-3 text-left last:border-b-0 hover:bg-slate-900"><span className="font-mono text-sky-300">{opm.codigo}</span><span className="ml-3 text-slate-300">{opm.nome}</span></button>)}</div>}
-            {inicio.length === 5 && <div className={"mt-2 rounded-xl border px-4 py-3 text-sm " + (opmSelecionada ? "border-emerald-900/70 bg-emerald-950/30 text-emerald-300" : "border-amber-900/70 bg-amber-950/30 text-amber-300")}>{opmSelecionada ? <><strong>{opmSelecionada.codigo}</strong> — {opmSelecionada.nome}</> : "Código não localizado entre as unidades ativas."}</div>}
+            {inicio.length >= 5 && <div className={"mt-2 rounded-xl border px-4 py-3 text-sm " + (opmSelecionada ? "border-emerald-900/70 bg-emerald-950/30 text-emerald-300" : "border-amber-900/70 bg-amber-950/30 text-amber-300")}>{opmSelecionada ? <><strong>{opmSelecionada.codigo}</strong> — {opmSelecionada.nome}</> : "Código não localizado entre as unidades ativas."}</div>}
           </label>
-          <div><span className="mb-2 block text-sm font-medium text-slate-300">Código final automático</span><div className="rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-lg font-mono text-sky-300">{fim || fimCalculado || "_________"}</div></div>
+          <label className="block"><span className="mb-2 block text-sm font-medium text-slate-300">Código final</span>
+            <input value={fim || fimCalculado} onChange={(event) => { setFim(event.target.value.replace(/\D/g, "").slice(0, 9)); setErro(""); }} inputMode="numeric" maxLength={9} placeholder="Ex.: 601039999" className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-lg font-mono outline-none focus:border-sky-500" />
+          </label>
           <button onClick={() => void handleConsultar()} disabled={carregando} className="rounded-xl bg-sky-500 px-6 py-3 font-semibold text-slate-950 transition hover:bg-sky-400 disabled:cursor-not-allowed disabled:opacity-60">{carregando ? "Consultando..." : "Consultar"}</button>
         </div>
-        <div className="mt-4 rounded-xl bg-slate-950/70 p-4 text-sm text-slate-400"><strong className="text-slate-200">Exemplo:</strong> 60103 → 601039999. Os 5 dígitos informados identificam a unidade; o sistema acrescenta automaticamente 9999.</div>
+        <div className="mt-4 rounded-xl bg-slate-950/70 p-4 text-sm text-slate-400"><strong className="text-slate-200">Exemplo:</strong> 60103 → 601039999. Você pode informar códigos completos de até 9 dígitos nos dois campos. Para consultar somente um patrimônio/unidade específica, informe o mesmo código completo no início e no final.</div>
         {tabelaErro && <div className="mt-4 rounded-xl border border-red-900/70 bg-red-950/40 p-4 text-sm text-red-300">{tabelaErro}</div>}
         {erro && <div className="mt-4 rounded-xl border border-red-900/70 bg-red-950/40 p-4 text-sm text-red-300">{erro}</div>}
       </section>
