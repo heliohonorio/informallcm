@@ -102,7 +102,14 @@ function normalizarCodigo(value: unknown) {
   if (!raw) return "";
   const digits = raw.replace(/\D/g, "");
   if (!digits) return "";
-  return digits.length >= 5 ? digits.slice(0, 5) : digits.padStart(5, "0");
+  if (digits.length >= 9) return digits.slice(0, 9);
+  if (digits.length === 5) return digits + "0000";
+  return "";
+}
+
+function codigoBaseOpm(value: unknown) {
+  const digits = String(value ?? "").replace(/\D/g, "");
+  return digits.length >= 5 ? digits.slice(0, 5) : "";
 }
 
 function localizarColuna(rows: XlsxRow[], candidatos: string[]) {
@@ -115,7 +122,7 @@ function detectarColunaCodigo(rows: XlsxRow[]) {
   if (candidatos) return candidatos;
   return Object.keys(rows[0] ?? {}).find((key) => {
     const values = rows.slice(0, 200).map((row) => normalizarCodigo(row[key])).filter(Boolean);
-    const validos = values.filter((value) => /^\d{5}$/.test(value));
+    const validos = values.filter((value) => /^\d{5,9}$/.test(value));
     return values.length >= 3 && validos.length / values.length >= 0.8;
   });
 }
@@ -164,7 +171,7 @@ async function carregarTabelaOpm(): Promise<OpmRecord[]> {
   const ativos = rows
     .filter((row) => String(row[situacaoCol] ?? "").trim().toUpperCase() === "A")
     .map((row) => ({ codigo: normalizarCodigo(row[codigoCol]), nome: String(row[nomeCol] ?? "").trim() }))
-    .filter((row) => /^\d{5}$/.test(row.codigo) && row.nome)
+    .filter((row) => /^\d{9}$/.test(row.codigo) && row.nome)
     .filter((row, index, array) => array.findIndex((item) => item.codigo === row.codigo) === index);
 
   if (!ativos.length) throw new Error("A Tabela OPM foi lida, mas nenhuma unidade ativa (situação A) foi encontrada.");
@@ -184,9 +191,9 @@ function Index() {
     if (inicio.length < 5) return "";
     return `${inicio.slice(0, 5)}9999`;
   }, [inicio]);
-  const codigoOpm = inicio.length === 9 ? inicio.slice(0, 5) : "";
+  const codigoOpm = inicio.length === 9 ? inicio : "";
   const opmSelecionada = useMemo(() => inicio.length === 9 ? opms.find((opm) => opm.codigo === codigoOpm) : undefined, [opms, codigoOpm]);
-  const sugestoes = useMemo(() => codigoOpm ? opms.filter((opm) => opm.codigo.startsWith(codigoOpm)).slice(0, 8) : [], [opms, codigoOpm]);
+  const sugestoes = useMemo(() => inicio ? opms.filter((opm) => opm.codigo.startsWith(inicio)).slice(0, 8) : [], [opms, inicio]);
 
   useEffect(() => {
     void carregarTabelaOpm().then(setOpms).catch((error) => setTabelaErro(error instanceof Error ? error.message : "Erro ao carregar a Tabela OPM."));
