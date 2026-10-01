@@ -5,21 +5,29 @@ let poolPromise: Promise<sql.ConnectionPool> | undefined;
 function getConfig(): sql.config {
   const server = process.env.SQL_SERVER ?? "bdcrpp1.policiamilitar.sp.gov.br";
   const instanceName = process.env.SQL_INSTANCE ?? "ISTCRP1";
-  return {
+  const port = process.env.SQL_PORT ? Number(process.env.SQL_PORT) : undefined;
+
+  const config: sql.config = {
     server,
     database: process.env.SQL_DATABASE ?? "BDCOrp",
     user: process.env.SQL_USER,
     password: process.env.SQL_PASSWORD,
-    port: process.env.SQL_PORT ? Number(process.env.SQL_PORT) : undefined,
     connectionTimeout: 15000,
     requestTimeout: 60000,
     pool: { max: 5, min: 0, idleTimeoutMillis: 30000 },
     options: {
-      instanceName: process.env.SQL_PORT ? undefined : instanceName,
       encrypt: process.env.SQL_ENCRYPT === "true",
       trustServerCertificate: process.env.SQL_TRUST_SERVER_CERTIFICATE !== "false",
     },
   };
+
+  if (port !== undefined) {
+    config.port = port;
+  } else {
+    config.options = { ...config.options, instanceName };
+  }
+
+  return config;
 }
 
 async function getPool() {
