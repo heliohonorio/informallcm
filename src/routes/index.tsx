@@ -184,8 +184,8 @@ function Index() {
     if (inicio.length < 5) return "";
     return `${inicio.slice(0, 5)}9999`;
   }, [inicio]);
-  const codigoOpm = inicio.length >= 5 ? inicio.slice(0, 5) : inicio;
-  const opmSelecionada = useMemo(() => opms.find((opm) => opm.codigo === codigoOpm), [opms, codigoOpm]);
+  const codigoOpm = inicio.length === 9 ? inicio.slice(0, 5) : "";
+  const opmSelecionada = useMemo(() => inicio.length === 9 ? opms.find((opm) => opm.codigo === codigoOpm) : undefined, [opms, codigoOpm]);
   const sugestoes = useMemo(() => codigoOpm ? opms.filter((opm) => opm.codigo.startsWith(codigoOpm)).slice(0, 8) : [], [opms, codigoOpm]);
 
   useEffect(() => {
@@ -240,7 +240,7 @@ function Index() {
               setErro("");
             }} onKeyDown={(event) => { if (event.key === "Enter") void handleConsultar(); }} inputMode="numeric" maxLength={9} placeholder="Ex.: 601030000" className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-lg font-mono outline-none focus:border-sky-500" />
             {sugestoes.length > 0 && inicio.length < 5 && <div className="mt-2 overflow-hidden rounded-xl border border-slate-700 bg-slate-950 shadow-lg">{sugestoes.map((opm) => <button key={opm.codigo} type="button" onClick={() => setInicio(opm.codigo)} className="block w-full border-b border-slate-800 px-4 py-3 text-left last:border-b-0 hover:bg-slate-900"><span className="font-mono text-sky-300">{opm.codigo}</span><span className="ml-3 text-slate-300">{opm.nome}</span></button>)}</div>}
-            {inicio.length >= 5 && <div className={"mt-2 rounded-xl border px-4 py-3 text-sm " + (opmSelecionada ? "border-emerald-900/70 bg-emerald-950/30 text-emerald-300" : "border-amber-900/70 bg-amber-950/30 text-amber-300")}>{opmSelecionada ? <><strong>{opmSelecionada.codigo}</strong> — {opmSelecionada.nome}</> : "Código não localizado entre as unidades ativas."}</div>}
+            {inicio.length === 9 && <div className={"mt-2 rounded-xl border px-4 py-3 text-sm " + (opmSelecionada ? "border-emerald-900/70 bg-emerald-950/30 text-emerald-300" : "border-amber-900/70 bg-amber-950/30 text-amber-300")}>{opmSelecionada ? <><strong>{opmSelecionada.codigo}</strong> — {opmSelecionada.nome}</> : "Código não localizado entre as unidades ativas."}</div>}
           </label>
           <label className="block"><span className="mb-2 block text-sm font-medium text-slate-300">Código final</span>
             <input value={fim || fimCalculado} onChange={(event) => { setFim(event.target.value.replace(/\D/g, "").slice(0, 9)); setErro(""); }} inputMode="numeric" maxLength={9} placeholder="Ex.: 601039999" className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-lg font-mono outline-none focus:border-sky-500" />
