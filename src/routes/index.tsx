@@ -243,7 +243,7 @@ function Index() {
             Baixar PDF
           </button>
         </div>
-      </section>>
+      </section>
     </div></main>
   );
 }
