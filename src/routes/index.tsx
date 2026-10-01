@@ -1,87 +1,17 @@
-import { useServerFn } from "@tanstack/react-start";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { consultarIntervalo } from "../lib/patrimonio.functions";
 
 export const Route = createFileRoute("/")({
   head: () => ({ meta: [{ title: "Consulta LCM | SIPL" }] }),
   component: Index,
 });
 
-function formatPatrimonio(value: string | number | null) {
-  if (value === null || value === undefined) return "";
-  return String(value).padStart(9, "0");
+const SIPL_LCM_URL = "https://sistemasadmin.intranet.policiamilitar.sp.gov.br/SIPL/arrelmatlcm.aspx";
+
+function montarUrlSipl(codigo: string) {
+  const somenteDigitos = codigo.replace(/\D/g, "").slice(0, 9);
+  return somenteDigitos.length === 9 ? SIPL_LCM_URL + "?" + somenteDigitos : "";
 }
-
-function escapePdfText(value: string) {
-  return value.replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)").replace(/\r?\n/g, " ");
-}
-
-function createPdf(rows: Array<Record<string, unknown>>, inicio: string, fim: string) {
-  const lines: string[] = [
-    "CONSULTA LCM - SIPL",
-    `Codigo da unidade: ${inicio}   Codigo final: ${fim}`,
-    `Registros encontrados: ${rows.length}`,
-    "",
-    "Patrimonio    CLE        SCS        GRP        SBO        TIP",
-    "--------------------------------------------------------------------------",
-  ];
-  for (const row of rows) {
-    const values = [
-      formatPatrimonio(row["Patrimônio"] as string | number),
-      String(row["CLE"] ?? ""), String(row["SCS"] ?? ""), String(row["GRP"] ?? ""),
-      String(row["SBO"] ?? ""), String(row["TIP"] ?? ""),
-    ];
-    lines.push(values.map((value, index) => {
-      const widths = [12, 10, 10, 10, 10, 10];
-      const width = widths[index] ?? 10;
-      return value.slice(0, width).padEnd(width, " ");
-    }).join(" "));
-  }
-
-  const pageSize = 48;
-  const pages: string[][] = [];
-  for (let i = 0; i < lines.length; i += pageSize) pages.push(lines.slice(i, i + pageSize));
-
-  const objects: string[] = [];
-  const pageIds: number[] = [];
-  const fontId = 3;
-  const pagesId = 2;
-  objects[1] = "<< /Type /Catalog /Pages 2 0 R >>";
-  objects[2] = "<< /Type /Pages /Kids [";
-  objects[3] = "<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>";
-
-  let nextId = 4;
-  for (const pageLines of pages) {
-    const pageId = nextId++;
-    const contentId = nextId++;
-    pageIds.push(pageId);
-    let stream = "BT\n/F1 9 Tf\n50 800 Td\n";
-    pageLines.forEach((line, index) => {
-      if (index > 0) stream += "0 -15 Td\n";
-      stream += `(${escapePdfText(line)}) Tj\n`;
-    });
-    stream += "ET";
-    const streamLength = new TextEncoder().encode(stream).length;
-    objects[pageId] = `<< /Type /Page /Parent ${pagesId} 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 ${fontId} 0 R >> >> /Contents ${contentId} 0 R >>`;
-    objects[contentId] = `<< /Length ${streamLength} >>\nstream\n${stream}\nendstream`;
-  }
-  objects[2] = `<< /Type /Pages /Kids [${pageIds.map((id) => `${id} 0 R`).join(" ")}] /Count ${pageIds.length} >>`;
-
-  let pdf = "%PDF-1.4\n";
-  const offsets: number[] = [0];
-  for (let id = 1; id < objects.length; id++) {
-    if (!objects[id]) continue;
-    offsets[id] = new TextEncoder().encode(pdf).length;
-    pdf += `${id} 0 obj\n${objects[id]}\nendobj\n`;
-  }
-  const xrefOffset = new TextEncoder().encode(pdf).length;
-  pdf += `xref\n0 ${objects.length}\n0000000000 65535 f \n`;
-  for (let id = 1; id < objects.length; id++) pdf += `${String(offsets[id] ?? 0).padStart(10, "0")} 00000 n \n`;
-  pdf += `trailer\n<< /Size ${objects.length} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
-  return new Blob([pdf], { type: "application/pdf" });
-}
-
 type XlsxRow = Record<string, unknown>;
 type OpmRecord = { codigo: string; nome: string };
 
@@ -223,12 +153,11 @@ async function carregarTabelaOpm(): Promise<OpmRecord[]> {
 }
 
 function Index() {
-  const consultar = useServerFn(consultarIntervalo);
   const [opms, setOpms] = useState<OpmRecord[]>([]);
   const [tabelaErro, setTabelaErro] = useState("");
   const [inicio, setInicio] = useState("");
   const [fim, setFim] = useState("");
-  const [rows, setRows] = useState<Array<Record<string, unknown>>>([]);
+  const [relatorioUrl, setRelatorioUrl] = useState("");
   const [erro, setErro] = useState("");
   const [carregando, setCarregando] = useState(false);
   const fimCalculado = useMemo(() => {
@@ -243,38 +172,26 @@ function Index() {
     void carregarTabelaOpm().then(setOpms).catch((error) => setTabelaErro(error instanceof Error ? error.message : "Erro ao carregar a Tabela OPM."));
   }, []);
 
-  async function handleConsultar() {
-    setErro(""); setRows([]);
-    if (!/^\d{5,9}$/.test(inicio)) { setErro("Digite o código inicial com 5 a 9 dígitos."); return; }
-    const inicioConsulta = inicio.length === 5 ? `${inicio}0000` : inicio;
-    const fimConsulta = fim || fimCalculado;
-    if (!/^\d{9}$/.test(inicioConsulta) || !/^\d{9}$/.test(fimConsulta)) {
-      setErro("Informe códigos inicial e final válidos, com até 9 dígitos.");
-      return;
-    }
+  function handleConsultar() {
+    setErro("");
+    setRelatorioUrl("");
+    if (!/^\d{5,9}$/.test(inicio)) { setErro("Digite o código da unidade com 5 a 9 dígitos."); return; }
+    const codigo = inicio.length === 5 ? inicio + "0000" : inicio;
+    if (!/^\d{9}$/.test(codigo)) { setErro("Informe um código de OPM válido com 9 dígitos."); return; }
     if (!opmSelecionada) { setErro("A unidade informada não está cadastrada entre as OPMs ativas."); return; }
-    if (Number(inicioConsulta) > Number(fimConsulta)) { setErro("O código inicial não pode ser maior que o código final."); return; }
+    const url = montarUrlSipl(codigo);
+    if (!url) { setErro("Não foi possível montar o endereço do SIPL."); return; }
+    setInicio(codigo);
+    setFim(codigo.slice(0, 5) + "9999");
     setCarregando(true);
-    try {
-      const result = await consultar({ data: { inicio: inicioConsulta, fim: fimConsulta } });
-      setFim(result.fim); setRows(result.rows as Array<Record<string, unknown>>);
-    } catch (error) {
-      setErro(error instanceof Error ? error.message : "Não foi possível consultar o SQL Server.");
-    } finally { setCarregando(false); }
+    setRelatorioUrl(url);
+    setTimeout(() => setCarregando(false), 400);
   }
 
-  function baixarPdf() {
-    if (!rows.length) return;
-    const codigoFinal = fim || fimCalculado;
-    const blob = createPdf(rows, inicio, codigoFinal);
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = `Consulta-LCM-${inicio}-a-${codigoFinal}.pdf`;
-    anchor.click();
-    URL.revokeObjectURL(url);
+  function abrirRelatorio() {
+    if (!relatorioUrl) return;
+    window.open(relatorioUrl, "_blank", "noopener,noreferrer");
   }
-
   return (
     <main className="min-h-screen bg-[#f8f9fa] text-[#202124]">
       <div className="mx-auto flex min-h-screen w-full max-w-[1120px] flex-col px-5 sm:px-8">
@@ -285,14 +202,14 @@ function Index() {
             </div>
             <div className="leading-none"><div className="text-[15px] font-medium tracking-tight text-[#3c4043]">SIPL</div><div className="mt-1 text-[11px] text-[#80868b]">Consulta LCM</div></div>
           </div>
-          <div className="hidden text-xs text-[#80868b] sm:block">Consulta de patrimônio</div>
+          <div className="hidden text-xs text-[#80868b] sm:block">Consulta de patrimônio pelo SIPL</div>
         </header>
 
         <div className="flex flex-1 flex-col items-center pt-[9vh] sm:pt-[12vh]">
           <div className="w-full max-w-[760px] text-center">
             <div className="mb-5 inline-flex items-center rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] font-medium tracking-wide text-[#5f6368]">CONSULTA LCM</div>
             <h1 className="text-[32px] font-normal tracking-[-0.7px] text-[#202124] sm:text-[42px]">Encontre os patrimônios da OPM</h1>
-            <p className="mx-auto mt-4 max-w-[590px] text-[15px] leading-6 text-[#5f6368]">Informe o código da unidade e faça a consulta. O resultado ficará disponível para download em PDF.</p>
+            <p className="mx-auto mt-4 max-w-[590px] text-[15px] leading-6 text-[#5f6368]">Informe o código da unidade e faça a consulta. O relatório é consultado diretamente no SIPL pela rede interna.</p>
 
             <div className="mt-9 rounded-[28px] border border-[#dadce0] bg-white p-3 shadow-[0_2px_8px_rgba(60,64,67,.08)] sm:p-4">
               <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto]">
@@ -323,9 +240,20 @@ function Index() {
 
             <div className="mt-10 border-t border-[#e8eaed] pt-8 text-left">
               <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-                <div><div className="flex items-center gap-2.5"><span className={"flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-semibold " + (rows.length ? "bg-[#e6f4ea] text-[#137333]" : "bg-[#f1f3f4] text-[#80868b]")}>{rows.length ? "✓" : "2"}</span><h2 className="text-[15px] font-medium text-[#3c4043]">Relatório LCM</h2></div><p className="mt-2 pl-[38px] text-[12px] text-[#80868b]">{rows.length ? <><strong className="font-medium text-[#5f6368]">{rows.length}</strong> registro(s) encontrado(s).</> : "Após a consulta, o relatório estará disponível aqui."}</p></div>
-                <button onClick={baixarPdf} disabled={!rows.length || carregando} className="inline-flex h-[44px] items-center justify-center gap-2 rounded-[13px] border border-[#dadce0] bg-white px-5 text-[13px] font-medium text-[#3c4043] transition hover:bg-[#f8f9fa] hover:border-[#c7c9cc] active:scale-[.98] disabled:cursor-not-allowed disabled:bg-[#f1f3f4] disabled:text-[#9aa0a6]"><svg viewBox="0 0 24 24" className="h-[17px] w-[17px]" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M12 4v10M8.5 10.5 12 14l3.5-3.5M5 18.5V20h14v-1.5" /></svg>Baixar PDF</button>
+                <div>
+                  <div className="flex items-center gap-2.5">
+                    <span className={"flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-semibold " + (relatorioUrl ? "bg-[#e6f4ea] text-[#137333]" : "bg-[#f1f3f4] text-[#80868b]")}>{relatorioUrl ? "✓" : "2"}</span>
+                    <h2 className="text-[15px] font-medium text-[#3c4043]">Relatório LCM do SIPL</h2>
+                  </div>
+                  <p className="mt-2 pl-[38px] text-[12px] text-[#80868b]">{relatorioUrl ? <>Relatório carregado para a OPM <strong className="font-medium text-[#5f6368]">{inicio}</strong>. O conteúdo abaixo é retornado diretamente pelo SIPL.</> : "Após a consulta, o relatório do SIPL aparecerá aqui."}</p>
+                </div>
+                <button onClick={abrirRelatorio} disabled={!relatorioUrl || carregando} className="inline-flex h-[44px] items-center justify-center gap-2 rounded-[13px] border border-[#dadce0] bg-white px-5 text-[13px] font-medium text-[#3c4043] transition hover:bg-[#f8f9fa] hover:border-[#c7c9cc] active:scale-[.98] disabled:cursor-not-allowed disabled:bg-[#f1f3f4] disabled:text-[#9aa0a6]">Abrir relatório</button>
               </div>
+              {relatorioUrl && (
+                <div className="mt-5 overflow-hidden rounded-[18px] border border-[#dadce0] bg-[#f1f3f4] shadow-[0_2px_8px_rgba(60,64,67,.08)]">
+                  <iframe title={"Relatório LCM SIPL - " + inicio} src={relatorioUrl} className="h-[75vh] min-h-[680px] w-full border-0 bg-white" />
+                </div>
+              )}
             </div>
           </div>
 
