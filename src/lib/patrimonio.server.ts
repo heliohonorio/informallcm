@@ -1,4 +1,4 @@
-import sql from "mssql";
+import type * as mssql from "mssql";
 
 let poolPromise: Promise<sql.ConnectionPool> | undefined;
 
@@ -35,6 +35,7 @@ async function getPool() {
     throw new Error("SQL Server não configurado. Cadastre SQL_USER e SQL_PASSWORD nos secrets do ambiente.");
   }
   if (!poolPromise) {
+    const sql = (await import("mssql")).default;
     poolPromise = sql.connect(getConfig()).catch((error) => { poolPromise = undefined; throw error; });
   }
   return poolPromise;
@@ -51,6 +52,7 @@ export type PatrimonioRow = {
 
 export async function consultarPatrimonios(inicio: string, fim: string): Promise<PatrimonioRow[]> {
   const pool = await getPool();
+  const sql = (await import("mssql")).default;
   const request = pool.request();
   request.input("Inicio", sql.VarChar(9), inicio);
   request.input("Fim", sql.VarChar(9), fim);
