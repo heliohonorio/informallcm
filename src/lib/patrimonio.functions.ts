@@ -2,14 +2,13 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { consultarPatrimonios } from "./patrimonio.server";
 
-const intervaloSchema = z.object({
-  inicio: z.string().regex(/^\d{9}$/, "O código inicial deve ter exatamente 9 dígitos."),
-  fim: z.string().regex(/^\d{9}$/, "O código final deve ter exatamente 9 dígitos."),
+const opmSchema = z.object({
+  opm: z.string().regex(/^\d{9}$/, "O código da unidade deve ter exatamente 9 dígitos."),
 });
 
 export const consultarIntervalo = createServerFn({ method: "POST" })
-  .validator(intervaloSchema)
+  .validator(opmSchema)
   .handler(async ({ data }) => {
-    const rows = await consultarPatrimonios(data.inicio, data.fim);
-    return { inicio: data.inicio, fim: data.fim, quantidade: rows.length, rows };
+    const rows = await consultarPatrimonios(data.opm);
+    return { opm: data.opm, quantidade: rows.length, rows };
   });
