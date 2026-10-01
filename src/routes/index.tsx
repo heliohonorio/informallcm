@@ -45,7 +45,7 @@ function Index() {
 
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100"><div className="mx-auto max-w-7xl px-5 py-10">
-      <header className="mb-8"><p className="text-sm font-semibold uppercase tracking-[0.22em] text-sky-400">SIPL • Consulta SQL</p>
+      <header className="mb-8"><p className="text-sm font-semibold uppercase tracking-[0.22em] text-sky-400">SIPL • Consulta LCM</p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Consulta LCM</h1>
         <p className="mt-2 max-w-2xl text-slate-400">Informe o código da unidade. Enquanto você digita os 5 primeiros dígitos, o sistema completa automaticamente o final com 9999.</p>
       </header>
