@@ -1,4 +1,5 @@
 import { useServerFn } from "@tanstack/react-start";
+import { useServerFn } from "@tanstack/react-start";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { consultarIntervalo } from "../lib/patrimonio.functions";
@@ -52,7 +53,7 @@ function Index() {
       <section className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 shadow-xl">
         <div className="grid gap-4 md:grid-cols-[1fr_1fr_auto] md:items-end">
           <label className="block"><span className="mb-2 block text-sm font-medium text-slate-300">Código da unidade</span>
-            <input value={inicio} onChange={(event) => setInicio(event.target.value.replace(/\D/g, "").slice(0, 9))} onKeyDown={(event) => { if (event.key === "Enter") void handleConsultar(); }} inputMode="numeric" maxLength={5} placeholder="Ex.: 60103" className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-lg font-mono outline-none focus:border-sky-500" />
+            <input value={inicio} onChange={(event) => setInicio(event.target.value.replace(/\D/g, "").slice(0, 5))} onKeyDown={(event) => { if (event.key === "Enter") void handleConsultar(); }} inputMode="numeric" maxLength={5} placeholder="Ex.: 60103" className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-lg font-mono outline-none focus:border-sky-500" />
           </label>
           <div><span className="mb-2 block text-sm font-medium text-slate-300">Código final automático</span>
             <div className="rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-lg font-mono text-sky-300">{fim || fimCalculado || "_________"}</div>
@@ -70,7 +71,7 @@ function Index() {
           <tr>{["Patrimônio", "CLE", "SCS", "GRP", "SBO", "TIP"].map((header) => <th key={header} className="px-5 py-3 font-medium">{header}</th>)}</tr></thead>
           <tbody className="divide-y divide-slate-800">
             {rows.map((row, index) => <tr key={`${String(row["Patrimônio"])}-${index}`} className="hover:bg-slate-800/40"><td className="px-5 py-3 font-mono text-sky-300">{formatPatrimonio(row["Patrimônio"] as string | number)}</td>{["CLE", "SCS", "GRP", "SBO", "TIP"].map((key) => <td key={key} className="px-5 py-3 font-mono text-slate-300">{String(row[key] ?? "")}</td>)}</tr>)}
-            {!rows.length && !carregando && <tr><td colSpan={6} className="px-5 py-14 text-center text-slate-500">Informe um patrimônio e clique em Consultar.</td></tr>}
+            {!rows.length && !carregando && <tr><td colSpan={6} className="px-5 py-14 text-center text-slate-500">Informe o código da unidade e clique em Consultar.</td></tr>}
           </tbody></table></div>
       </section>
     </div></main>
