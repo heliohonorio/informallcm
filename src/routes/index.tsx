@@ -171,7 +171,7 @@ function Index() {
     setErro("");
     setRelatorioUrl("");
 
-    if (!/^\\d{9}$/.test(inicio)) {
+    if (!/^\d{9}$/.test(inicio)) {
       setErro("Digite o código exato da unidade com 9 dígitos.");
       return;
     }
@@ -267,7 +267,7 @@ function Index() {
 
 
 
-                <button onClick={() => void handleConsultar()} disabled={carregando} className="h-[54px] rounded-[16px] bg-[#1a73e8] px-6 text-[14px] font-medium text-white transition hover:bg-[#1769d1] active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-50 md:mt-[22px]">{carregando ? <span className="inline-flex items-center gap-2"><span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />Consultando</span> : "Consultar"}</button>
+                <button onClick={() => void handleConsultar()} disabled={carregando} className="h-[54px] rounded-[16px] bg-[#1a73e8] px-6 text-[14px] font-medium text-white transition hover:bg-[#1769d1] active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-50 md:mt-[22px]">{carregando ? <span className="inline-flex items-center gap-2"><span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />Consultando</span> : "Confirmar unidade e consultar"}</button>
               </div>
 
               {sugestoes.length > 0 && inicio.length < 5 && <div className="mt-2 overflow-hidden rounded-[16px] border border-[#dadce0] bg-white text-left shadow-[0_4px_12px_rgba(60,64,67,.12)]"><div className="px-4 py-2.5 text-[11px] font-medium uppercase tracking-wide text-[#80868b]">Unidades encontradas</div>{sugestoes.map((opm) => <button key={opm.codigo} type="button" onClick={() => { setInicio(opm.codigo); }} className="flex w-full items-center justify-between border-t border-[#f1f3f4] px-4 py-3 text-left hover:bg-[#f8f9fa]"><span className="font-mono text-[13px] font-medium text-[#3c4043]">{opm.codigo}</span><span className="ml-4 truncate text-[13px] text-[#5f6368]">{opm.nome}</span></button>)}</div>}
