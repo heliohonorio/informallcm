@@ -269,33 +269,163 @@ function Index() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100"><div className="mx-auto max-w-7xl px-5 py-10">
-      <header className="mb-8"><p className="text-sm font-semibold uppercase tracking-[0.22em] text-sky-400">SIPL • Consulta LCM</p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Consulta LCM</h1>
-        <p className="mt-2 max-w-2xl text-slate-400">Informe o código da unidade. A Tabela OPM mostra somente unidades ativas e confirma o nome antes da consulta.</p>
-      </header>
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 shadow-xl">
-        <div className="grid gap-4 md:grid-cols-[1fr_1fr_auto] md:items-end">
-          <label className="block"><span className="mb-2 block text-sm font-medium text-slate-300">Código da unidade</span>
-            <input value={inicio} onChange={(event) => {
-              const value = event.target.value.replace(/\D/g, "").slice(0, 9);
-              setInicio(value);
-              setFim(value.length >= 5 ? `${value.slice(0, 5)}9999` : "");
-              setErro("");
-            }} onKeyDown={(event) => { if (event.key === "Enter") void handleConsultar(); }} inputMode="numeric" maxLength={9} placeholder="Ex.: 601030000" className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-lg font-mono outline-none focus:border-sky-500" />
-            {sugestoes.length > 0 && inicio.length < 5 && <div className="mt-2 overflow-hidden rounded-xl border border-slate-700 bg-slate-950 shadow-lg">{sugestoes.map((opm) => <button key={opm.codigo} type="button" onClick={() => setInicio(opm.codigo)} className="block w-full border-b border-slate-800 px-4 py-3 text-left last:border-b-0 hover:bg-slate-900"><span className="font-mono text-sky-300">{opm.codigo}</span><span className="ml-3 text-slate-300">{opm.nome}</span></button>)}</div>}
-            {inicio.length === 9 && <div className={"mt-2 rounded-xl border px-4 py-3 text-sm " + (opmSelecionada ? "border-emerald-900/70 bg-emerald-950/30 text-emerald-300" : "border-amber-900/70 bg-amber-950/30 text-amber-300")}>{opmSelecionada ? <><strong>{opmSelecionada.codigo}</strong> — {opmSelecionada.nome}</> : "Código não localizado entre as unidades ativas."}</div>}
-          </label>
-          <label className="block"><span className="mb-2 block text-sm font-medium text-slate-300">Código final</span>
-            <input value={fim || fimCalculado} onChange={(event) => { setFim(event.target.value.replace(/\D/g, "").slice(0, 9)); setErro(""); }} inputMode="numeric" maxLength={9} placeholder="Ex.: 601039999" className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-lg font-mono outline-none focus:border-sky-500" />
-          </label>
-          <button onClick={() => void handleConsultar()} disabled={carregando} className="rounded-xl bg-sky-500 px-6 py-3 font-semibold text-slate-950 transition hover:bg-sky-400 disabled:cursor-not-allowed disabled:opacity-60">{carregando ? "Consultando..." : "Consultar"}</button>
-        </div>
-        <div className="mt-4 rounded-xl bg-slate-950/70 p-4 text-sm text-slate-400"><strong className="text-slate-200">Exemplo:</strong> 60103 → 601039999. Você pode informar códigos completos de até 9 dígitos nos dois campos. Para consultar somente um patrimônio/unidade específica, informe o mesmo código completo no início e no final.</div>
-        {tabelaErro && <div className="mt-4 rounded-xl border border-red-900/70 bg-red-950/40 p-4 text-sm text-red-300">{tabelaErro}</div>}
-        {erro && <div className="mt-4 rounded-xl border border-red-900/70 bg-red-950/40 p-4 text-sm text-red-300">{erro}</div>}
-      </section>
-      <section className="mt-6 rounded-2xl border border-slate-800 bg-slate-900/80 p-5"><div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"><div><h2 className="font-semibold">Relatório LCM</h2><p className="text-sm text-slate-400">{rows.length ? `${rows.length} registro(s) encontrado(s). O resultado será baixado diretamente em PDF.` : "Após a consulta, o botão para baixar o relatório em PDF aparecerá aqui."}</p></div><button onClick={baixarPdf} disabled={!rows.length || carregando} className="rounded-xl bg-emerald-500 px-5 py-3 font-semibold text-slate-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-40">Baixar PDF</button></div></section>
-    </div></main>
+    <main className="min-h-screen bg-[#f5f7fa] text-slate-900">
+      <div className="mx-auto min-h-screen max-w-5xl px-4 py-6 sm:px-6 sm:py-10">
+        <header className="mb-7 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-sm">
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4h13A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18.5v-13Z" />
+                <path d="M8 8h8M8 12h8M8 16h5" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">SIPL</p>
+              <p className="text-sm font-semibold text-slate-900">Consulta LCM</p>
+            </div>
+          </div>
+          <span className="hidden rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-500 shadow-sm sm:inline-flex">
+            Consulta de patrimônio
+          </span>
+        </header>
+
+        <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
+          <div className="border-b border-slate-100 bg-gradient-to-br from-slate-50 to-white px-5 py-7 sm:px-8 sm:py-9">
+            <div className="max-w-2xl">
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                Sistema disponível
+              </div>
+              <h1 className="text-2xl font-bold tracking-tight text-slate-950 sm:text-4xl">Consulte o LCM da unidade</h1>
+              <p className="mt-3 text-sm leading-6 text-slate-500 sm:text-base">
+                Digite o código da OPM, confirme a unidade e faça a consulta. O relatório poderá ser baixado em PDF.
+              </p>
+            </div>
+          </div>
+
+          <div className="px-5 py-6 sm:px-8 sm:py-8">
+            <div className="mb-6 flex items-center gap-3">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-900 text-xs font-bold text-white">1</div>
+              <div>
+                <h2 className="text-sm font-bold text-slate-900">Informe os códigos</h2>
+                <p className="text-xs text-slate-500">Use até 9 dígitos em cada campo.</p>
+              </div>
+            </div>
+
+            <div className="grid gap-5 lg:grid-cols-[1fr_1fr_auto] lg:items-end">
+              <label className="block">
+                <span className="mb-2 block text-sm font-semibold text-slate-700">Código inicial</span>
+                <div className="relative">
+                  <input
+                    value={inicio}
+                    onChange={(event) => {
+                      const value = event.target.value.replace(/\D/g, "").slice(0, 9);
+                      setInicio(value);
+                      setFim(value.length >= 5 ? `${value.slice(0, 5)}9999` : "");
+                      setErro("");
+                    }}
+                    onKeyDown={(event) => { if (event.key === "Enter") void handleConsultar(); }}
+                    inputMode="numeric"
+                    maxLength={9}
+                    placeholder="Ex.: 201000000"
+                    aria-label="Código inicial da OPM"
+                    className="h-14 w-full rounded-2xl border border-slate-300 bg-white px-4 font-mono text-lg font-semibold tracking-wide text-slate-950 outline-none transition placeholder:font-normal placeholder:text-slate-300 focus:border-slate-900 focus:ring-4 focus:ring-slate-900/10"
+                  />
+                  <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-400">{inicio.length}/9</span>
+                </div>
+                {inicio.length === 9 && (
+                  <div className={"mt-3 flex items-start gap-2.5 rounded-2xl border px-4 py-3 text-sm " + (opmSelecionada ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-amber-200 bg-amber-50 text-amber-800")}>
+                    <span className="mt-0.5 shrink-0">{opmSelecionada ? "✓" : "!"}</span>
+                    <div>
+                      {opmSelecionada ? <><strong>{opmSelecionada.codigo}</strong><span className="mx-1.5 text-emerald-500">•</span>{opmSelecionada.nome}</> : "Código não localizado entre as unidades ativas."}
+                    </div>
+                  </div>
+                )}
+              </label>
+
+              <label className="block">
+                <span className="mb-2 block text-sm font-semibold text-slate-700">Código final</span>
+                <input
+                  value={fim || fimCalculado}
+                  onChange={(event) => { setFim(event.target.value.replace(/\D/g, "").slice(0, 9)); setErro(""); }}
+                  inputMode="numeric"
+                  maxLength={9}
+                  placeholder="Ex.: 201009999"
+                  aria-label="Código final da OPM"
+                  className="h-14 w-full rounded-2xl border border-slate-300 bg-white px-4 font-mono text-lg font-semibold tracking-wide text-slate-950 outline-none transition placeholder:font-normal placeholder:text-slate-300 focus:border-slate-900 focus:ring-4 focus:ring-slate-900/10"
+                />
+                <p className="mt-2 text-xs text-slate-400">Preenchido automaticamente, mas você pode editar.</p>
+              </label>
+
+              <button
+                onClick={() => void handleConsultar()}
+                disabled={carregando}
+                className="h-14 rounded-2xl bg-slate-900 px-7 font-semibold text-white shadow-lg shadow-slate-900/15 transition hover:-translate-y-0.5 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50 lg:min-w-[150px]"
+              >
+                {carregando ? (
+                  <span className="inline-flex items-center gap-2">
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                    Consultando
+                  </span>
+                ) : "Consultar"}
+              </button>
+            </div>
+
+            {sugestoes.length > 0 && inicio.length < 5 && (
+              <div className="mt-3 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg">
+                <div className="border-b border-slate-100 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Unidades encontradas</div>
+                {sugestoes.map((opm) => (
+                  <button key={opm.codigo} type="button" onClick={() => { setInicio(opm.codigo); setFim(`${opm.codigo.slice(0, 5)}9999`); }} className="flex w-full items-center justify-between border-b border-slate-100 px-4 py-3 text-left last:border-b-0 hover:bg-slate-50">
+                    <span className="font-mono font-semibold text-slate-800">{opm.codigo}</span>
+                    <span className="ml-4 truncate text-sm text-slate-500">{opm.nome}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div className="mt-6 flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-500">
+              <svg viewBox="0 0 24 24" className="mt-0.5 h-5 w-5 shrink-0 text-slate-400" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 10v6M12 7.5h.01" />
+              </svg>
+              <p><strong className="text-slate-700">Dica:</strong> para consultar uma unidade inteira, use o código inicial e deixe o código final preenchido automaticamente. Para consultar somente um código específico, coloque o mesmo número nos dois campos.</p>
+            </div>
+
+            {tabelaErro && <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{tabelaErro}</div>}
+            {erro && <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">{erro}</div>}
+          </div>
+        </section>
+
+        <section className="mt-5 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-3">
+              <div className={"flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold " + (rows.length ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-400")}>
+                2
+              </div>
+              <div>
+                <h2 className="font-bold text-slate-900">Relatório LCM</h2>
+                <p className="mt-1 text-sm text-slate-500">
+                  {rows.length ? <><strong className="text-slate-700">{rows.length}</strong> registro(s) encontrado(s). O arquivo está pronto para baixar.</> : "Depois da consulta, o relatório aparecerá aqui para download."}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={baixarPdf}
+              disabled={!rows.length || carregando}
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-6 font-semibold text-white shadow-lg shadow-emerald-600/15 transition hover:-translate-y-0.5 hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none"
+            >
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                <path d="M12 3v11M8 10l4 4 4-4M5 18v2h14v-2" />
+              </svg>
+              Baixar PDF
+            </button>
+          </div>
+        </section>
+
+        <footer className="mt-6 text-center text-xs text-slate-400">
+          SIPL • Consulta LCM
+        </footer>
+      </div>
+    </main>
   );
 }
