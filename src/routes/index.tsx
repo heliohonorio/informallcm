@@ -160,9 +160,18 @@ function detectarColunaSituacao(rows: XlsxRow[]) {
 }
 
 function detectarColunaNome(rows: XlsxRow[], codigoCol?: string, situacaoCol?: string) {
-  const candidatos = localizarColuna(rows, ["nome", "nomeopm", "nomeunidade", "unidade", "descricao", "denominacao", "nomefantasia"]);
+  // A tabela possui uma identificação curta da unidade (sigla), que é o
+  // valor que deve ser mostrado ao lado do código. Não usar "descrição",
+  // "denominação" ou campos organizacionais genéricos, pois eles podem
+  // retornar valores como "ORG DIR SET" em vez de "DL".
+  const candidatos = localizarColuna(rows, [
+    "sigla", "sigladaopm", "siglaopm", "siglaunidade",
+    "nome", "nomeopm", "nomeunidade", "unidade"
+  ]);
   if (candidatos && candidatos !== codigoCol && candidatos !== situacaoCol) return candidatos;
-  return Object.keys(rows[0] ?? {}).find((key) => {
+
+  const colunas = Object.keys(rows[0] ?? {});
+  return colunas.find((key) => {
     if (key === codigoCol || key === situacaoCol) return false;
     const values = rows.slice(0, 100).map((row) => String(row[key] ?? "").trim()).filter(Boolean);
     return values.length >= 3 && values.filter((value) => /[A-Za-zÀ-ÿ]/.test(value)).length / values.length >= 0.7;
