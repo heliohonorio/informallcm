@@ -37,7 +37,7 @@ function Index() {
   function exportarCsv() {
     if (!rows.length) return;
     const headers = ["Patrimônio", "CLE", "SCS", "GRP", "SBO", "TIP"];
-    const csv = [headers.join(";"), ...rows.map((row) => headers.map((header) => `"${String(row[header] ?? "").replaceAll(""", """")}"`).join(";"))].join("\n");
+    const csv = [headers.join(";"), ...rows.map((row) => headers.map((header) => `"${String(row[header] ?? "").replaceAll('"', '""')}"`).join(";"))].join("\n");
     const blob = new Blob(["\uFEFF", csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob); const anchor = document.createElement("a");
     anchor.href = url; anchor.download = `patrimonios-${inicio}-a-${fim || fimCalculado}.csv`; anchor.click(); URL.revokeObjectURL(url);
