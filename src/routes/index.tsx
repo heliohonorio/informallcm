@@ -161,8 +161,8 @@ const CATEGORIAS: Array<{ nome: CategoriaMaterial; termos: string[] }> = [
 ];
 
 function classificarLinhaMaterial(linha: string): CategoriaMaterial {
-  const normalizada = linha.normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").toLowerCase();
-  return CATEGORIAS.find((categoria) => categoria.nome !== "Diversos" && categoria.termos.some((termo) => normalizada.includes(termo.normalize("NFD").replace(/[\\u0300-\\u036f]/g, ""))))?.nome ?? "Diversos";
+  const normalizada = linha.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  return CATEGORIAS.find((categoria) => categoria.nome !== "Diversos" && categoria.termos.some((termo) => normalizada.includes(termo.normalize("NFD").replace(/[\u0300-\u036f]/g, ""))))?.nome ?? "Diversos";
 }
 
 async function extrairTextoPdf(blob: Blob) {
