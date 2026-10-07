@@ -182,43 +182,20 @@ function Index() {
     setTimeout(() => setCarregando(false), 400);
   }
 
-  async function baixarPdfSipl() {
+  function baixarPdfSipl() {
     if (!relatorioUrl) return;
-
     setErro("");
-    setCarregando(true);
-
-    try {
-      const response = await fetch(relatorioUrl, {
-        method: "GET",
-        credentials: "include",
-      });
-
-      if (!response.ok) {
-        throw new Error("O SIPL não permitiu o download automático do relatório.");
-      }
-
-      const contentType = response.headers.get("content-type") ?? "";
-      if (!contentType.toLowerCase().includes("pdf")) {
-        throw new Error("O retorno do SIPL não foi identificado como PDF.");
-      }
-
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const anchor = document.createElement("a");
-      anchor.href = url;
-      anchor.download = "Consulta-LCM-" + inicio + ".pdf";
-      document.body.appendChild(anchor);
-      anchor.click();
-      anchor.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-    } catch {
-      // Se o SIPL bloquear fetch/CORS, mantém o acesso direto ao relatório.
-      window.open(relatorioUrl, "_blank", "noopener,noreferrer");
-      setErro("O SIPL abriu o relatório em uma nova aba porque o navegador bloqueou o download automático.");
-    } finally {
-      setCarregando(false);
-    }
+    // O SIPL está na rede interna e em outro domínio: o navegador bloqueia
+    // a leitura do arquivo pelo app. Abrimos o link direto, no mesmo clique,
+    // para não ser barrado pelo bloqueador de pop-ups.
+    const anchor = document.createElement("a");
+    anchor.href = relatorioUrl;
+    anchor.target = "_blank";
+    anchor.rel = "noopener noreferrer";
+    anchor.download = "Consulta-LCM-" + inicio + ".pdf";
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
   }
 
   function abrirRelatorio() {
