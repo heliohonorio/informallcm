@@ -275,7 +275,7 @@ function Index() {
                   <p className="mt-2 pl-[38px] text-[12px] text-[#9aa0a6]">{relatorioUrl ? <>Relatório carregado para a OPM <strong className="font-medium text-[#e8eaed]">{inicio}</strong>. O conteúdo abaixo é retornado diretamente pelo SIPL.</> : "Após a consulta, o relatório do SIPL aparecerá aqui."}</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <button onClick={() => void baixarPdfSipl()} disabled={!relatorioUrl || carregando} className="inline-flex h-[44px] items-center justify-center gap-2 rounded-[13px] bg-[#8ab4f8] px-5 text-[13px] font-medium text-[#202124] transition hover:bg-[#a8c7fa] active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-50">Baixar PDF</button>
+                  <button onClick={() => void baixarPdfSipl()} disabled={!relatorioUrl || carregando || baixandoPdf} className="inline-flex h-[44px] items-center justify-center gap-2 rounded-[13px] bg-[#8ab4f8] px-5 text-[13px] font-medium text-[#202124] transition hover:bg-[#a8c7fa] active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-50">{baixandoPdf ? <span className="inline-flex items-center gap-2"><span className="h-4 w-4 animate-spin rounded-full border-2 border-[#202124]/30 border-t-[#202124]" />Baixando</span> : "Baixar PDF"}</button>
                   <button onClick={abrirRelatorio} disabled={!relatorioUrl || carregando} className="inline-flex h-[44px] items-center justify-center gap-2 rounded-[13px] border border-[#3c4043] bg-[#2b2c2f] px-5 text-[13px] font-medium text-[#e8eaed] transition hover:bg-[#303134] hover:border-[#5f6368] active:scale-[.98] disabled:cursor-not-allowed disabled:bg-[#2b2c2f] disabled:text-[#80868b]">Abrir relatório</button>
                 </div>
               </div>
@@ -286,6 +286,19 @@ function Index() {
               )}
             </div>
           </div>
+
+          {confirmandoPdf && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4" role="dialog" aria-modal="true" aria-label="Confirmar download do PDF">
+              <div className="w-full max-w-[400px] rounded-[20px] border border-[#3c4043] bg-[#2b2c2f] p-6 text-left shadow-[0_8px_30px_rgba(0,0,0,.5)]">
+                <h3 className="text-[16px] font-medium text-[#e8eaed]">Baixar relatório em PDF?</h3>
+                <p className="mt-2 text-[13px] leading-5 text-[#9aa0a6]">O download do relatório LCM da OPM <strong className="font-medium text-[#e8eaed]">{inicio}</strong> começará imediatamente.</p>
+                <div className="mt-5 flex justify-end gap-2">
+                  <button onClick={() => setConfirmandoPdf(false)} className="inline-flex h-[40px] items-center justify-center rounded-[12px] border border-[#3c4043] bg-transparent px-5 text-[13px] font-medium text-[#e8eaed] transition hover:bg-[#303134] active:scale-[.98]">Não</button>
+                  <button onClick={() => void confirmarDownloadPdf()} className="inline-flex h-[40px] items-center justify-center rounded-[12px] bg-[#8ab4f8] px-5 text-[13px] font-medium text-[#202124] transition hover:bg-[#a8c7fa] active:scale-[.98]">Sim, baixar</button>
+                </div>
+              </div>
+            </div>
+          )}
 
           <footer className="mt-auto pb-6 pt-10 text-center text-[11px] text-[#80868b]">SIPL • Consulta LCM</footer>
         </div>
