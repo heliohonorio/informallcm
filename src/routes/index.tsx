@@ -149,6 +149,8 @@ function Index() {
   const [relatorioUrl, setRelatorioUrl] = useState("");
   const [erro, setErro] = useState("");
   const [carregando, setCarregando] = useState(false);
+  const [confirmandoPdf, setConfirmandoPdf] = useState(false);
+  const [baixandoPdf, setBaixandoPdf] = useState(false);
   const codigoOpm = inicio.length === 9 ? inicio : "";
   const opmSelecionada = useMemo(() => inicio.length === 9 ? opms.find((opm) => opm.codigo === codigoOpm) : undefined, [opms, codigoOpm]);
   const sugestoes = useMemo(() => inicio ? opms.filter((opm) => opm.codigo.startsWith(inicio)).slice(0, 8) : [], [opms, inicio]);
@@ -185,17 +187,36 @@ function Index() {
   function baixarPdfSipl() {
     if (!relatorioUrl) return;
     setErro("");
-    // O SIPL está na rede interna e em outro domínio: o navegador bloqueia
-    // a leitura do arquivo pelo app. Abrimos o link direto, no mesmo clique,
-    // para não ser barrado pelo bloqueador de pop-ups.
-    const anchor = document.createElement("a");
-    anchor.href = relatorioUrl;
-    anchor.target = "_blank";
-    anchor.rel = "noopener noreferrer";
-    anchor.download = "Consulta-LCM-" + inicio + ".pdf";
-    document.body.appendChild(anchor);
-    anchor.click();
-    anchor.remove();
+    setConfirmandoPdf(true);
+  }
+
+  async function confirmarDownloadPdf() {
+    if (!relatorioUrl) return;
+    setConfirmandoPdf(false);
+    setBaixandoPdf(true);
+    setErro("");
+    try {
+      // Tenta baixar o arquivo diretamente, sem abrir nova aba.
+      const response = await fetch(relatorioUrl, { mode: "cors", credentials: "include" });
+      if (!response.ok) throw new Error("HTTP " + response.status);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = "Consulta-LCM-" + inicio + ".pdf";
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+    } catch {
+      // O SIPL está em outro domínio da rede interna e pode bloquear a
+      // leitura direta pelo navegador. Nesse caso, abrimos o relatório
+      // para que o usuário salve o PDF por lá.
+      setErro("O navegador bloqueou o download direto do SIPL. O relatório foi aberto em uma nova aba — salve o PDF por ela.");
+      window.open(relatorioUrl, "_blank", "noopener,noreferrer");
+    } finally {
+      setBaixandoPdf(false);
+    }
   }
 
   function abrirRelatorio() {
