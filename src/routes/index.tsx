@@ -203,70 +203,70 @@ function Index() {
     window.open(relatorioUrl, "_blank", "noopener,noreferrer");
   }
   return (
-    <main className="min-h-screen bg-[#f8f9fa] text-[#202124]">
+    <main className="min-h-screen bg-[#202124] text-[#e8eaed]">
       <div className="mx-auto flex min-h-screen w-full max-w-[1120px] flex-col px-5 sm:px-8">
         <header className="flex h-[72px] items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#1a73e8] text-white">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#8ab4f8] text-[#202124]">
               <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M5 4.5h14v15H5z" /><path d="M8 8h8M8 12h8M8 16h5" /></svg>
             </div>
-            <div className="leading-none"><div className="text-[15px] font-medium tracking-tight text-[#3c4043]">SIPL</div><div className="mt-1 text-[11px] text-[#80868b]">Consulta LCM</div></div>
+            <div className="leading-none"><div className="text-[15px] font-medium tracking-tight text-[#e8eaed]">SIPL</div><div className="mt-1 text-[11px] text-[#9aa0a6]">Consulta LCM</div></div>
           </div>
-          <div className="hidden text-xs text-[#80868b] sm:block">Consulta de patrimônio pelo SIPL</div>
+          <div className="hidden text-xs text-[#9aa0a6] sm:block">Consulta de patrimônio pelo SIPL</div>
         </header>
 
         <div className="flex flex-1 flex-col items-center pt-[9vh] sm:pt-[12vh]">
           <div className="w-full max-w-[760px] text-center">
-            <div className="mb-5 inline-flex items-center rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] font-medium tracking-wide text-[#5f6368]">CONSULTA LCM</div>
-            <h1 className="text-[32px] font-normal tracking-[-0.7px] text-[#202124] sm:text-[42px]">Encontre os patrimônios da OPM</h1>
-            <p className="mx-auto mt-4 max-w-[590px] text-[15px] leading-6 text-[#5f6368]">Informe o código da unidade e faça a consulta. O relatório é consultado diretamente no SIPL pela rede interna.</p>
+            <div className="mb-5 inline-flex items-center rounded-full border border-[#3c4043] bg-[#2b2c2f] px-3 py-1 text-[11px] font-medium tracking-wide text-[#9aa0a6]">CONSULTA LCM</div>
+            <h1 className="text-[32px] font-normal tracking-[-0.7px] text-[#e8eaed] sm:text-[42px]">Encontre os patrimônios da OPM</h1>
+            <p className="mx-auto mt-4 max-w-[590px] text-[15px] leading-6 text-[#9aa0a6]">Informe o código da unidade e faça a consulta. O relatório é consultado diretamente no SIPL pela rede interna.</p>
 
-            <div className="mt-9 rounded-[28px] border border-[#dadce0] bg-white p-3 shadow-[0_2px_8px_rgba(60,64,67,.08)] sm:p-4">
+            <div className="mt-9 rounded-[28px] border border-[#3c4043] bg-[#2b2c2f] p-3 shadow-[0_2px_8px_rgba(0,0,0,.35)] sm:p-4">
               <div className="grid gap-3 md:grid-cols-[1fr_auto]">
                 <label className="text-left">
-                  <span className="mb-1.5 ml-3 block text-[12px] font-medium text-[#5f6368]">Código da unidade</span>
+                  <span className="mb-1.5 ml-3 block text-[12px] font-medium text-[#9aa0a6]">Código da unidade</span>
                   <div className="relative">
-                    <input value={inicio} onChange={(event) => { const value = event.target.value.replace(/\D/g, "").slice(0, 9); setInicio(value); setErro(""); }} onKeyDown={(event) => { if (event.key === "Enter") void handleConsultar(); }} inputMode="numeric" maxLength={9} placeholder="201008220" aria-label="Código exato da OPM" className="h-[54px] w-full rounded-[16px] border border-[#dadce0] bg-[#f8f9fa] px-4 pr-12 font-mono text-[16px] font-medium tracking-[.04em] text-[#202124] outline-none transition placeholder:text-[#9aa0a6] hover:border-[#bdc1c6] focus:border-[#1a73e8] focus:bg-white focus:ring-4 focus:ring-[#1a73e8]/10" />
-                    <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[11px] text-[#9aa0a6]">{inicio.length}/9</span>
+                    <input value={inicio} onChange={(event) => { const value = event.target.value.replace(/\D/g, "").slice(0, 9); setInicio(value); setErro(""); }} onKeyDown={(event) => { if (event.key === "Enter") void handleConsultar(); }} inputMode="numeric" maxLength={9} placeholder="201008220" aria-label="Código exato da OPM" className="h-[54px] w-full rounded-[16px] border border-[#3c4043] bg-[#202124] px-4 pr-12 font-mono text-[16px] font-medium tracking-[.04em] text-[#e8eaed] outline-none transition placeholder:text-[#80868b] hover:border-[#5f6368] focus:border-[#8ab4f8] focus:bg-[#202124] focus:ring-4 focus:ring-[#8ab4f8]/15" />
+                    <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[11px] text-[#80868b]">{inicio.length}/9</span>
                   </div>
-                  {inicio.length === 9 && <div className={"mt-2.5 rounded-[14px] px-3.5 py-2.5 text-left text-[12px] " + (opmSelecionada ? "bg-[#e6f4ea] text-[#137333]" : "bg-[#fef7e0] text-[#b06000]")}>{opmSelecionada ? <span><strong className="font-semibold">{opmSelecionada.codigo}</strong><span className="mx-1.5 opacity-50">•</span>{opmSelecionada.nome}</span> : "Código não localizado entre as unidades ativas."}</div>}
+                  {inicio.length === 9 && <div className={"mt-2.5 rounded-[14px] px-3.5 py-2.5 text-left text-[12px] " + (opmSelecionada ? "bg-[#2d3f31] text-[#81c995]" : "bg-[#3d3223] text-[#fdd663]")}>{opmSelecionada ? <span><strong className="font-semibold">{opmSelecionada.codigo}</strong><span className="mx-1.5 opacity-50">•</span>{opmSelecionada.nome}</span> : "Código não localizado entre as unidades ativas."}</div>}
                 </label>
 
 
 
-                <button onClick={() => void handleConsultar()} disabled={carregando} className="h-[54px] rounded-[16px] bg-[#1a73e8] px-6 text-[14px] font-medium text-white transition hover:bg-[#1769d1] active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-50 md:mt-[22px]">{carregando ? <span className="inline-flex items-center gap-2"><span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />Consultando</span> : "Confirmar unidade e consultar"}</button>
+                <button onClick={() => void handleConsultar()} disabled={carregando} className="h-[54px] rounded-[16px] bg-[#8ab4f8] px-6 text-[14px] font-medium text-[#202124] transition hover:bg-[#a8c7fa] active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-50 md:mt-[22px]">{carregando ? <span className="inline-flex items-center gap-2"><span className="h-4 w-4 animate-spin rounded-full border-2 border-[#202124]/30 border-t-[#202124]" />Consultando</span> : "Confirmar unidade e consultar"}</button>
               </div>
 
-              {sugestoes.length > 0 && inicio.length < 5 && <div className="mt-2 overflow-hidden rounded-[16px] border border-[#dadce0] bg-white text-left shadow-[0_4px_12px_rgba(60,64,67,.12)]"><div className="px-4 py-2.5 text-[11px] font-medium uppercase tracking-wide text-[#80868b]">Unidades encontradas</div>{sugestoes.map((opm) => <button key={opm.codigo} type="button" onClick={() => { setInicio(opm.codigo); }} className="flex w-full items-center justify-between border-t border-[#f1f3f4] px-4 py-3 text-left hover:bg-[#f8f9fa]"><span className="font-mono text-[13px] font-medium text-[#3c4043]">{opm.codigo}</span><span className="ml-4 truncate text-[13px] text-[#5f6368]">{opm.nome}</span></button>)}</div>}
+              {sugestoes.length > 0 && inicio.length < 5 && <div className="mt-2 overflow-hidden rounded-[16px] border border-[#3c4043] bg-[#2b2c2f] text-left shadow-[0_4px_12px_rgba(0,0,0,.4)]"><div className="px-4 py-2.5 text-[11px] font-medium uppercase tracking-wide text-[#9aa0a6]">Unidades encontradas</div>{sugestoes.map((opm) => <button key={opm.codigo} type="button" onClick={() => { setInicio(opm.codigo); }} className="flex w-full items-center justify-between border-t border-[#3c4043] px-4 py-3 text-left hover:bg-[#303134]"><span className="font-mono text-[13px] font-medium text-[#e8eaed]">{opm.codigo}</span><span className="ml-4 truncate text-[13px] text-[#9aa0a6]">{opm.nome}</span></button>)}</div>}
               <div className="mt-3 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 px-2 text-[11px] text-[#80868b]"><span>O código informado será usado exatamente como digitado no SIPL.</span><span className="hidden sm:inline">•</span><span>Digite os 9 dígitos exatos da unidade.</span></div>
             </div>
 
-            {tabelaErro && <div className="mx-auto mt-4 max-w-[760px] rounded-[14px] border border-[#f4c7c3] bg-[#fce8e6] px-4 py-3 text-left text-[13px] text-[#c5221f]">{tabelaErro}</div>}
-            {erro && <div className="mx-auto mt-4 max-w-[760px] rounded-[14px] border border-[#f4c7c3] bg-[#fce8e6] px-4 py-3 text-left text-[13px] text-[#c5221f]">{erro}</div>}
+            {tabelaErro && <div className="mx-auto mt-4 max-w-[760px] rounded-[14px] border border-[#5c2b28] bg-[#3b1f1e] px-4 py-3 text-left text-[13px] text-[#f28b82]">{tabelaErro}</div>}
+            {erro && <div className="mx-auto mt-4 max-w-[760px] rounded-[14px] border border-[#5c2b28] bg-[#3b1f1e] px-4 py-3 text-left text-[13px] text-[#f28b82]">{erro}</div>}
 
-            <div className="mt-10 border-t border-[#e8eaed] pt-8 text-left">
+            <div className="mt-10 border-t border-[#3c4043] pt-8 text-left">
               <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <div className="flex items-center gap-2.5">
-                    <span className={"flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-semibold " + (relatorioUrl ? "bg-[#e6f4ea] text-[#137333]" : "bg-[#f1f3f4] text-[#80868b]")}>{relatorioUrl ? "✓" : "2"}</span>
-                    <h2 className="text-[15px] font-medium text-[#3c4043]">Relatório LCM do SIPL</h2>
+                    <span className={"flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-semibold " + (relatorioUrl ? "bg-[#2d3f31] text-[#81c995]" : "bg-[#303134] text-[#9aa0a6]")}>{relatorioUrl ? "✓" : "2"}</span>
+                    <h2 className="text-[15px] font-medium text-[#e8eaed]">Relatório LCM do SIPL</h2>
                   </div>
-                  <p className="mt-2 pl-[38px] text-[12px] text-[#80868b]">{relatorioUrl ? <>Relatório carregado para a OPM <strong className="font-medium text-[#5f6368]">{inicio}</strong>. O conteúdo abaixo é retornado diretamente pelo SIPL.</> : "Após a consulta, o relatório do SIPL aparecerá aqui."}</p>
+                  <p className="mt-2 pl-[38px] text-[12px] text-[#9aa0a6]">{relatorioUrl ? <>Relatório carregado para a OPM <strong className="font-medium text-[#e8eaed]">{inicio}</strong>. O conteúdo abaixo é retornado diretamente pelo SIPL.</> : "Após a consulta, o relatório do SIPL aparecerá aqui."}</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <button onClick={() => void baixarPdfSipl()} disabled={!relatorioUrl || carregando} className="inline-flex h-[44px] items-center justify-center gap-2 rounded-[13px] bg-[#1a73e8] px-5 text-[13px] font-medium text-white transition hover:bg-[#1769d1] active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-50">Baixar PDF</button>
-                  <button onClick={abrirRelatorio} disabled={!relatorioUrl || carregando} className="inline-flex h-[44px] items-center justify-center gap-2 rounded-[13px] border border-[#dadce0] bg-white px-5 text-[13px] font-medium text-[#3c4043] transition hover:bg-[#f8f9fa] hover:border-[#c7c9cc] active:scale-[.98] disabled:cursor-not-allowed disabled:bg-[#f1f3f4] disabled:text-[#9aa0a6]">Abrir relatório</button>
+                  <button onClick={() => void baixarPdfSipl()} disabled={!relatorioUrl || carregando} className="inline-flex h-[44px] items-center justify-center gap-2 rounded-[13px] bg-[#8ab4f8] px-5 text-[13px] font-medium text-[#202124] transition hover:bg-[#a8c7fa] active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-50">Baixar PDF</button>
+                  <button onClick={abrirRelatorio} disabled={!relatorioUrl || carregando} className="inline-flex h-[44px] items-center justify-center gap-2 rounded-[13px] border border-[#3c4043] bg-[#2b2c2f] px-5 text-[13px] font-medium text-[#e8eaed] transition hover:bg-[#303134] hover:border-[#5f6368] active:scale-[.98] disabled:cursor-not-allowed disabled:bg-[#2b2c2f] disabled:text-[#80868b]">Abrir relatório</button>
                 </div>
               </div>
               {relatorioUrl && (
-                <div className="mt-5 overflow-hidden rounded-[18px] border border-[#dadce0] bg-[#f1f3f4] shadow-[0_2px_8px_rgba(60,64,67,.08)]">
-                  <iframe title={"Relatório LCM SIPL - " + inicio} src={relatorioUrl} className="h-[75vh] min-h-[680px] w-full border-0 bg-white" />
+                <div className="mt-5 overflow-hidden rounded-[18px] border border-[#3c4043] bg-[#303134] shadow-[0_2px_8px_rgba(0,0,0,.35)]">
+                  <iframe title={"Relatório LCM SIPL - " + inicio} src={relatorioUrl} className="h-[75vh] min-h-[680px] w-full border-0 bg-[#202124]" />
                 </div>
               )}
             </div>
           </div>
 
-          <footer className="mt-auto pb-6 pt-10 text-center text-[11px] text-[#9aa0a6]">SIPL • Consulta LCM</footer>
+          <footer className="mt-auto pb-6 pt-10 text-center text-[11px] text-[#80868b]">SIPL • Consulta LCM</footer>
         </div>
       </div>
     </main>
