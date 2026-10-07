@@ -142,3 +142,6 @@
     color: var(--color-foreground);
   }
 }
+#lovable-badge {
+display: none !important;
+}
