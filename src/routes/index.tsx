@@ -29,18 +29,8 @@ function normalizarCabecalho(value: unknown) {
 }
 
 function normalizarCodigo(value: unknown) {
-  const raw = String(value ?? "").trim();
-  if (!raw) return "";
-  const digits = raw.replace(/\D/g, "");
-  if (!digits) return "";
-  if (digits.length >= 9) return digits.slice(0, 9);
-  if (digits.length === 5) return digits + "0000";
-  return "";
-}
-
-function codigoBaseOpm(value: unknown) {
-  const digits = String(value ?? "").replace(/\D/g, "");
-  return digits.length >= 5 ? digits.slice(0, 5) : "";
+  const digits = String(value ?? "").trim().replace(/\D/g, "");
+  return /^\d{9}$/.test(digits) ? digits : "";
 }
 
 function localizarColuna(rows: XlsxRow[], candidatos: string[]) {
@@ -75,7 +65,7 @@ function detectarColunaCodigo(rows: XlsxRow[]) {
 
   return colunas.find((key) => {
     const values = rows.slice(0, 200).map((row) => normalizarCodigo(row[key])).filter(Boolean);
-    const validos = values.filter((value) => /^\d{5,9}$/.test(value));
+    const validos = values.filter((value) => /^\d{9}$/.test(value));
     return values.length >= 3 && validos.length / values.length >= 0.8;
   });
 }
