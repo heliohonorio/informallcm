@@ -285,6 +285,16 @@ function Index() {
                 </div>
               )}
             </div>
+
+            <div className="mx-auto mt-8 max-w-[760px] rounded-[16px] border border-[#5f4b1f] bg-[#2f2a1c] px-4 py-3.5 text-left">
+              <div className="flex items-start gap-3">
+                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#fdd663] text-[13px] font-bold text-[#2f2a1c]" aria-hidden="true">!</span>
+                <div>
+                  <p className="text-[13px] font-medium leading-5 text-[#fdd663]">Este sistema só funciona nas máquinas conectadas ao CMDO / INTRANET.</p>
+                  <p className="mt-1.5 text-[12px] leading-5 text-[#c9b98a]">Fora dessa rede o relatório do SIPL não carrega e o download do PDF não é concluído. Use um computador da rede interna da PM.</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           {confirmandoPdf && (
