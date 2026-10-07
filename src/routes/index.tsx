@@ -1,5 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+import { getDocument, GlobalWorkerOptions } from "pdfjs-dist";
+import pdfWorker from "pdfjs-dist/build/pdf.worker.mjs?url";
+
+GlobalWorkerOptions.workerSrc = pdfWorker;
 
 export const Route = createFileRoute("/")({
   head: () => ({ meta: [{ title: "Consulta LCM | SIPL" }] }),
@@ -142,6 +146,37 @@ async function carregarTabelaOpm(): Promise<OpmRecord[]> {
   return ativos;
 }
 
+type CategoriaMaterial = "Todos" | "Colete" | "EPI" | "Informática" | "Telecomunicação" | "Munição" | "Viatura" | "Arma" | "Lote" | "Diversos";
+
+const CATEGORIAS: Array<{ nome: CategoriaMaterial; termos: string[] }> = [
+  { nome: "Colete", termos: ["colete", "balistico", "balística"] },
+  { nome: "EPI", termos: ["epi", "capacete", "luva", "oculos", "óculos", "coturno", "equipamento de protecao", "equipamento de proteção"] },
+  { nome: "Informática", termos: ["informatica", "informática", "computador", "monitor", "impressora", "notebook", "teclado", "mouse"] },
+  { nome: "Telecomunicação", termos: ["telecom", "radio", "rádio", "comunicacao", "comunicação", "telefone"] },
+  { nome: "Munição", termos: ["municao", "munição", "cartucho", "projetil", "projétil"] },
+  { nome: "Viatura", termos: ["viatura", "veiculo", "veículo", "automovel", "automóvel"] },
+  { nome: "Arma", termos: ["arma", "pistola", "fuzil", "carabina", "revolver", "revólver"] },
+  { nome: "Lote", termos: ["lote"] },
+  { nome: "Diversos", termos: ["diverso", "diversos"] },
+];
+
+function classificarLinhaMaterial(linha: string): CategoriaMaterial {
+  const normalizada = linha.normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").toLowerCase();
+  return CATEGORIAS.find((categoria) => categoria.nome !== "Diversos" && categoria.termos.some((termo) => normalizada.includes(termo.normalize("NFD").replace(/[\\u0300-\\u036f]/g, ""))))?.nome ?? "Diversos";
+}
+
+async function extrairTextoPdf(blob: Blob) {
+  const data = new Uint8Array(await blob.arrayBuffer());
+  const pdf = await getDocument({ data }).promise;
+  const paginas: string[] = [];
+  for (let pagina = 1; pagina <= pdf.numPages; pagina += 1) {
+    const page = await pdf.getPage(pagina);
+    const content = await page.getTextContent();
+    paginas.push(content.items.map((item) => "str" in item ? item.str : "").join(" "));
+  }
+  return paginas.join("\n");
+}
+
 function Index() {
   const [opms, setOpms] = useState<OpmRecord[]>([]);
   const [tabelaErro, setTabelaErro] = useState("");
@@ -151,6 +186,10 @@ function Index() {
   const [carregando, setCarregando] = useState(false);
   const [confirmandoPdf, setConfirmandoPdf] = useState(false);
   const [baixandoPdf, setBaixandoPdf] = useState(false);
+  const [textoPdf, setTextoPdf] = useState("");
+  const [categoriaAtiva, setCategoriaAtiva] = useState<CategoriaMaterial>("Todos");
+  const [carregandoFiltros, setCarregandoFiltros] = useState(false);
+  const [erroFiltros, setErroFiltros] = useState("");
   const codigoOpm = inicio.length === 9 ? inicio : "";
   const opmSelecionada = useMemo(() => inicio.length === 9 ? opms.find((opm) => opm.codigo === codigoOpm) : undefined, [opms, codigoOpm]);
   const sugestoes = useMemo(() => inicio ? opms.filter((opm) => opm.codigo.startsWith(inicio)).slice(0, 8) : [], [opms, inicio]);
@@ -158,6 +197,42 @@ function Index() {
   useEffect(() => {
     void carregarTabelaOpm().then(setOpms).catch((error) => setTabelaErro(error instanceof Error ? error.message : "Erro ao carregar a Tabela OPM."));
   }, []);
+
+  useEffect(() => {
+    if (!relatorioUrl) return;
+    let cancelado = false;
+    setCarregandoFiltros(true);
+    setErroFiltros("");
+    setTextoPdf("");
+    void fetch(relatorioUrl, { mode: "cors", credentials: "include" })
+      .then((response) => {
+        if (!response.ok) throw new Error("HTTP " + response.status);
+        return response.blob();
+      })
+      .then(extrairTextoPdf)
+      .then((texto) => {
+        if (!cancelado) setTextoPdf(texto);
+      })
+      .catch(() => {
+        if (!cancelado) setErroFiltros("Não foi possível ler o PDF automaticamente. Se o SIPL bloquear o acesso ao arquivo, o relatório continuará disponível no visualizador abaixo.");
+      })
+      .finally(() => {
+        if (!cancelado) setCarregandoFiltros(false);
+      });
+    return () => { cancelado = true; };
+  }, [relatorioUrl]);
+
+  const linhasPdf = useMemo(() => textoPdf.split(/\\n+/).map((linha) => linha.trim()).filter(Boolean), [textoPdf]);
+  const categoriasDisponiveis = useMemo(() => {
+    if (!linhasPdf.length) return [] as CategoriaMaterial[];
+    const encontradas = new Set<CategoriaMaterial>();
+    linhasPdf.forEach((linha) => encontradas.add(classificarLinhaMaterial(linha)));
+    return CATEGORIAS.map((categoria) => categoria.nome).filter((nome) => encontradas.has(nome));
+  }, [linhasPdf]);
+  const linhasFiltradas = useMemo(
+    () => categoriaAtiva === "Todos" ? linhasPdf : linhasPdf.filter((linha) => classificarLinhaMaterial(linha) === categoriaAtiva),
+    [linhasPdf, categoriaAtiva],
+  );
 
   function handleConsultar() {
     setErro("");
@@ -280,9 +355,44 @@ function Index() {
                 </div>
               </div>
               {relatorioUrl && (
-                <div className="mt-5 overflow-hidden rounded-[18px] border border-[#3c4043] bg-[#303134] shadow-[0_2px_8px_rgba(0,0,0,.35)]">
-                  <iframe title={"Relatório LCM SIPL - " + inicio} src={relatorioUrl} className="h-[75vh] min-h-[680px] w-full border-0 bg-[#202124]" />
-                </div>
+                <>
+                  {(carregandoFiltros || categoriasDisponiveis.length > 0 || erroFiltros) && (
+                    <div className="mt-5 rounded-[18px] border border-[#3c4043] bg-[#2b2c2f] p-4 text-left">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                          <div className="text-[13px] font-medium text-[#e8eaed]">Filtrar materiais</div>
+                          <div className="mt-1 text-[11px] text-[#9aa0a6]">
+                            {carregandoFiltros ? "Lendo o conteúdo do PDF..." : erroFiltros ? "O filtro automático não pôde ler este PDF." : "Categorias encontradas neste relatório."}
+                          </div>
+                        </div>
+                        {textoPdf && <span className="text-[11px] text-[#81c995]">{linhasFiltradas.length} linha(s)</span>}
+                      </div>
+                      {categoriasDisponiveis.length > 0 && (
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          {(["Todos", ...categoriasDisponiveis] as CategoriaMaterial[]).map((categoria) => (
+                            <button key={categoria} type="button" onClick={() => setCategoriaAtiva(categoria)} className={"rounded-[11px] border px-3.5 py-2 text-[12px] font-medium transition active:scale-[.98] " + (categoriaAtiva === categoria ? "border-[#8ab4f8] bg-[#8ab4f8] text-[#202124]" : "border-[#3c4043] bg-[#202124] text-[#e8eaed] hover:bg-[#303134]")}>
+                              {categoria}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      {textoPdf && (
+                        <div className="mt-4 max-h-[360px] overflow-auto rounded-[14px] border border-[#3c4043] bg-[#202124] p-3">
+                          {linhasFiltradas.length > 0 ? (
+                            <div className="space-y-1">
+                              {linhasFiltradas.map((linha, index) => <div key={index} className="border-b border-[#303134] px-2 py-2 font-mono text-[11px] leading-5 text-[#d9dce1] last:border-0">{linha}</div>)}
+                            </div>
+                          ) : (
+                            <div className="px-2 py-5 text-center text-[12px] text-[#9aa0a6]">Nenhum item encontrado nesta categoria.</div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  <div className="mt-5 overflow-hidden rounded-[18px] border border-[#3c4043] bg-[#303134] shadow-[0_2px_8px_rgba(0,0,0,.35)]">
+                    <iframe title={"Relatório LCM SIPL - " + inicio} src={relatorioUrl} className="h-[75vh] min-h-[680px] w-full border-0 bg-[#202124]" />
+                  </div>
+                </>
               )}
             </div>
 
