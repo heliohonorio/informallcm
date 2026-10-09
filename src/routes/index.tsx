@@ -216,7 +216,7 @@ function Index() {
     return () => { cancelado = true; };
   }, [relatorioUrl]);
 
-  const linhasPdf = useMemo(() => textoPdf.split(/\\n+/).map((linha) => linha.trim()).filter(Boolean), [textoPdf]);
+  const linhasPdf = useMemo(() => textoPdf.split(/\n+/).map((linha) => linha.trim()).filter(Boolean), [textoPdf]);
   const categoriasDisponiveis = useMemo(() => CATEGORIAS.map((categoria) => categoria.nome), []);
   const linhasFiltradas = useMemo(
     () => categoriaAtiva === "Todos" ? linhasPdf : linhasPdf.filter((linha) => classificarLinhaMaterial(linha) === categoriaAtiva),
