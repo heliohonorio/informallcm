@@ -109,7 +109,7 @@ function encontrarEstruturaOpm(workbook: { SheetNames: string[]; Sheets: Record<
 
 async function carregarTabelaOpm(): Promise<OpmRecord[]> {
   if (!window.XLSX) throw new Error("O leitor da tabela OPM ainda não foi carregado. Atualize a página e tente novamente.");
-  const response = await fetch("/tabela%20OPM.xlsx", { cache: "no-store" });
+  const response = await fetch(`${import.meta.env.BASE_URL}tabela%20OPM.xlsx`, { cache: "no-store" });
   if (!response.ok) throw new Error("Não foi possível carregar a Tabela OPM.");
   const workbook = window.XLSX.read(await response.arrayBuffer());
   const estrutura = encontrarEstruturaOpm(workbook);
