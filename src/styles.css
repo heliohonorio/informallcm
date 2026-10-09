@@ -443,3 +443,24 @@ display: none !important;
   .sipl-app section.sipl-panel > div:nth-child(2) > button { width: 100%; min-width: 0; }
   .sipl-filter-chip { padding: .55rem .7rem; font-size: 10px; }
 }
+
+
+/* Acessibilidade: maior contraste e leitura */
+.sipl-app [class~="text-slate-600"] { color: #b3c3d7 !important; }
+.sipl-app [class~="text-slate-500"] { color: #bdcce0 !important; }
+.sipl-app [class~="text-slate-400"] { color: #d5e0ed !important; }
+.sipl-app [class~="text-slate-300"] { color: #e5edf7 !important; }
+.sipl-app [class~="text-slate-200"] { color: #f8fafc !important; }
+.sipl-app [class~="text-sky-200"] { color: #a5ddff !important; }
+.sipl-app .sipl-panel { border-color: rgba(186,209,235,.38); background: linear-gradient(145deg, #17263a, #101d2e); }
+.sipl-app .sipl-input { background: #050b14 !important; border-color: #8fa3bb !important; color: #fff !important; font-size: 18px; }
+.sipl-app .sipl-input::placeholder { color: #b2c0d2 !important; opacity: 1; }
+.sipl-app .sipl-input:focus { border-color: #7dd3fc !important; box-shadow: 0 0 0 3px rgba(125,211,252,.25); }
+.sipl-app .sipl-secondary-button { border-color: #8396ad; background: #1b2b40; color: #fff; }
+.sipl-app .sipl-secondary-button:hover:not(:disabled) { border-color: #7dd3fc; background: #29435f; color: #fff; }
+.sipl-app .sipl-primary-button { background: #a5ddff; color: #07111e; }
+.sipl-app .sipl-network-note { border-color: rgba(255,208,95,.55); background: #282216; }
+.sipl-app .sipl-alert { border-color: #e6b84d; background: #30250e; color: #fff0bd; }
+.sipl-app button:focus-visible, .sipl-app a:focus-visible { outline: 3px solid #7dd3fc; outline-offset: 3px; }
+.sipl-app button:disabled { opacity: .65; }
+@media (max-width: 640px) { .sipl-app .sipl-network-note p, .sipl-app .sipl-alert { font-size: 13px; line-height: 1.65; } }
