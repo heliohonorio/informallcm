@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Activity, ArrowDownToLine, ArrowUpRight, Check, CheckCircle2, ChevronRight, CircleHelp, Database, ExternalLink, FileSearch, Filter, Fingerprint, LockKeyhole, Search, ShieldCheck, Download, X } from "lucide-react";
+import { Activity, ArrowDownToLine, ArrowUpRight, CheckCircle2, ChevronRight, CircleHelp, Database, ExternalLink, FileSearch, Fingerprint, LockKeyhole, Search, ShieldCheck, X } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({ meta: [{ title: "Consulta LCM | SIPL" }] }),
