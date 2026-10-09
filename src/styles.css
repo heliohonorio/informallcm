@@ -564,7 +564,7 @@ display: none !important;
 .sipl-app [class~="text-[14px]"] { font-size: 15px !important; line-height: 1.55 !important; }
 .sipl-app [class~="text-[15px]"] { font-size: 16px !important; line-height: 1.6 !important; }
 .sipl-app header .text-right { max-width: 300px; }
-.sipl-app input.sipl-input { font-size: 20px !important; }
+.sipl-app input.sipl-input { font-size: 16px !important; line-height: 1.4 !important; letter-spacing: .06em; }
 .sipl-app footer { line-height: 1.6; }
 @media (max-width: 640px) {
   .sipl-app [class~="text-[9px]"],
@@ -593,3 +593,38 @@ display: none !important;
   line-height: 1.4 !important;
 }
 .sipl-app footer img { height: 20px !important; }
+
+
+/* Ajustes finais de usabilidade da pesquisa OPM e consistência visual */
+.sipl-app input.sipl-input {
+  height: 50px;
+  font-size: 16px !important;
+  line-height: 1.4 !important;
+  letter-spacing: .06em;
+  font-variant-numeric: tabular-nums;
+}
+.sipl-suggestions {
+  scroll-margin-block: 1rem;
+  max-height: min(440px, 58vh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #52677f #0b1320;
+}
+.sipl-suggestions [role="option"] {
+  min-height: 48px;
+}
+.sipl-suggestions [role="option"] > span:nth-child(2) {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.45;
+}
+.sipl-app button {
+  -webkit-tap-highlight-color: transparent;
+}
+.sipl-app section.sipl-panel > div:nth-child(2) {
+  align-items: end;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sipl-suggestions { scroll-behavior: auto; }
+}
