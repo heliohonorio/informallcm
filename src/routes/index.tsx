@@ -395,12 +395,15 @@ function Index() {
           </div>
         )}
 
-        <footer className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-white/[.07] py-5 text-center sm:flex-row sm:text-left">
-          <div className="flex items-center gap-2 text-[10px] font-semibold tracking-[.05em] text-slate-500"><ShieldCheck size={14} className="text-sky-300/70" /> SIPL <span className="text-slate-700">/</span> Consulta LCM</div>
-          <div className="flex flex-col items-center gap-2 sm:items-end">
-            <div className="text-[10px] text-slate-600">Interface de consulta • Rede interna</div>
-            <div className="flex items-center gap-2 text-[10px] text-slate-400"><Activity size={13} className="text-sky-300" /><span>Visitas totais</span><img src="https://visitor-badge.one9x.com/badge?page_id=sipl-consulta-lcm&namespace=sipl&left_text=VISITAS&left_color=0f172a&right_color=0ea5e9" alt="Contador total de visitas do SIPL" loading="eager" referrerPolicy="no-referrer" className="h-5" /></div>
+        <footer className="mt-10 flex flex-col items-center gap-4 border-t border-white/[.05] py-5 text-center">
+          <div className="flex w-full flex-col items-center justify-between gap-3 sm:flex-row">
+            <div className="flex items-center gap-2 text-[10px] font-semibold tracking-[.05em] text-[#334155]"><ShieldCheck size={14} className="text-[#334155]" /> SIPL <span className="text-[#334155]">/</span> Consulta LCM</div>
+            <div className="flex flex-col items-center gap-1 text-[10px] text-[#334155] sm:items-end">
+              <div>Criado por: Sd PM Filho</div>
+              <div>Diretoria de Logística • Setor de Auditoria e Sistemas</div>
+            </div>
           </div>
+          <div className="flex items-center justify-center gap-2 text-[10px] text-[#334155]"><Activity size={13} className="text-[#334155]" /><span>Visitas totais</span><img src="https://visitor-badge.one9x.com/badge?page_id=sipl-consulta-lcm&namespace=sipl&left_text=VISITAS&left_color=0b1320&right_color=334155" alt="Contador total de visitas do SIPL" loading="eager" referrerPolicy="no-referrer" className="h-5 opacity-80" /></div>
         </footer>
       </div>
     </main>
