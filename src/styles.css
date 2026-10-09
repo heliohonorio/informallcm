@@ -421,3 +421,25 @@ display: none !important;
     transition-duration: .01ms !important;
   }
 }
+
+
+/* Ajustes de simplicidade, responsividade e prevenção de sobreposição */
+.sipl-app { overflow-x: clip; }
+.sipl-visual-card { display: none !important; }
+.sipl-panel, .sipl-pdf-frame, .sipl-empty-state { min-width: 0; }
+.sipl-suggestions { position: relative; z-index: 30; max-width: 100%; }
+.sipl-filter-chip { white-space: normal; min-height: 38px; }
+.sipl-pdf-text { overflow-wrap: anywhere; }
+.sipl-pdf-text > div > div { overflow-wrap: anywhere; }
+.sipl-input-wrap { min-width: 0; }
+@media (min-width: 1024px) {
+  .sipl-app > div.relative.z-10 { max-width: 1180px; }
+  .sipl-app section.grid.flex-1 { grid-template-columns: minmax(0, 1fr); padding-top: 2.5rem; padding-bottom: 2rem; }
+  .sipl-app section.grid.flex-1 h1 { max-width: 850px; font-size: clamp(2.5rem, 4.5vw, 4rem); }
+}
+@media (max-width: 767px) {
+  .sipl-app section.sipl-panel { padding: 1rem; border-radius: 1.25rem; }
+  .sipl-app section.sipl-panel > div:nth-child(2) { grid-template-columns: minmax(0, 1fr); }
+  .sipl-app section.sipl-panel > div:nth-child(2) > button { width: 100%; min-width: 0; }
+  .sipl-filter-chip { padding: .55rem .7rem; font-size: 10px; }
+}
