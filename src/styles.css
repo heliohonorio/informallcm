@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap");
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
@@ -144,4 +145,279 @@
 }
 #lovable-badge {
 display: none !important;
+}
+
+
+/* SIPL LCM — modern, restrained motion system */
+.font-display {
+  font-family: "Space Grotesk", "Manrope", ui-sans-serif, system-ui, sans-serif;
+}
+.sipl-app {
+  isolation: isolate;
+  background:
+    radial-gradient(ellipse at 50% -25%, rgba(29, 78, 125, .30), transparent 53%),
+    linear-gradient(145deg, #080e18 0%, #0a111d 46%, #080d16 100%);
+  font-family: "Manrope", ui-sans-serif, system-ui, sans-serif;
+}
+.sipl-grid-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: .21;
+  background-image: linear-gradient(rgba(148, 163, 184, .07) 1px, transparent 1px), linear-gradient(90deg, rgba(148, 163, 184, .07) 1px, transparent 1px);
+  background-size: 54px 54px;
+  mask-image: linear-gradient(to bottom, black, transparent 76%);
+}
+.sipl-ambient {
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  width: min(58vw, 720px);
+  aspect-ratio: 1;
+  border-radius: 9999px;
+  filter: blur(90px);
+  opacity: .16;
+  animation: sipl-drift 18s ease-in-out infinite alternate;
+}
+.sipl-ambient-a {
+  top: 4%;
+  right: -22%;
+  background: radial-gradient(circle, #2475b9 0%, #244c86 35%, transparent 70%);
+}
+.sipl-ambient-b {
+  top: 45%;
+  left: -32%;
+  width: min(50vw, 620px);
+  background: radial-gradient(circle, #263c80 0%, #15334e 40%, transparent 70%);
+  animation-delay: -8s;
+}
+.sipl-brand-mark {
+  background: linear-gradient(145deg, #60a5fa, #2563a9 65%, #1e4777);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.28), 0 8px 26px rgba(37,99,169,.23);
+}
+.sipl-topbar {
+  border-bottom: 1px solid rgba(255,255,255,.07);
+}
+.sipl-title-glow {
+  background: linear-gradient(105deg, #f8fafc 5%, #bfdbfe 43%, #60a5fa 76%, #a5b4fc 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 25px rgba(96,165,250,.12));
+}
+.sipl-panel {
+  border: 1px solid rgba(148,163,184,.16);
+  background: linear-gradient(145deg, rgba(20,31,48,.91), rgba(12,20,33,.88));
+  box-shadow: 0 24px 80px rgba(0,0,0,.20), inset 0 1px 0 rgba(255,255,255,.035);
+  backdrop-filter: blur(22px);
+}
+.sipl-input-wrap {
+  transition: transform .25s ease;
+}
+.sipl-input-wrap:focus-within {
+  transform: translateY(-1px);
+}
+.sipl-input {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.025);
+}
+.sipl-primary-button {
+  background: linear-gradient(110deg, #93c5fd, #60a5fa 55%, #7dd3fc);
+  box-shadow: 0 8px 24px rgba(59,130,246,.14), inset 0 1px 0 rgba(255,255,255,.45);
+}
+.sipl-primary-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 30px rgba(59,130,246,.25), inset 0 1px 0 rgba(255,255,255,.5);
+  filter: saturate(1.08);
+}
+.sipl-primary-button:active:not(:disabled) {
+  transform: translateY(0) scale(.99);
+}
+.sipl-secondary-button {
+  border: 1px solid rgba(148,163,184,.18);
+  background: rgba(255,255,255,.035);
+  color: #dbe5f2;
+}
+.sipl-secondary-button:hover:not(:disabled) {
+  border-color: rgba(125,181,246,.38);
+  background: rgba(96,165,250,.08);
+  color: #fff;
+}
+.sipl-visual-card {
+  min-height: 385px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sipl-glass-panel {
+  width: 100%;
+  border: 1px solid rgba(148,163,184,.19);
+  background: linear-gradient(145deg, rgba(24,37,57,.86), rgba(12,21,35,.77));
+  box-shadow: 0 30px 90px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.075);
+  backdrop-filter: blur(24px);
+  animation: sipl-card-float 7s ease-in-out infinite;
+}
+.sipl-orbit {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  border: 1px solid rgba(125,181,246,.15);
+  border-radius: 50%;
+  transform: translate(-50%,-50%) rotate(-22deg);
+  pointer-events: none;
+}
+.sipl-orbit-outer {
+  width: 410px;
+  height: 300px;
+  box-shadow: 0 0 70px rgba(59,130,246,.05);
+}
+.sipl-orbit-inner {
+  width: 330px;
+  height: 390px;
+  border-color: rgba(129,140,248,.12);
+  transform: translate(-50%,-50%) rotate(37deg);
+}
+.sipl-float-chip {
+  position: absolute;
+  z-index: 20;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid rgba(148,163,184,.19);
+  border-radius: 14px;
+  padding: 11px 13px;
+  background: rgba(11,19,32,.86);
+  box-shadow: 0 14px 38px rgba(0,0,0,.24);
+  color: #b7c7db;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .025em;
+  backdrop-filter: blur(18px);
+}
+.sipl-float-chip-top {
+  top: 3%;
+  right: -1%;
+  animation: sipl-chip-float 6s ease-in-out infinite;
+}
+.sipl-float-chip-top svg {
+  color: #7dd3fc;
+}
+.sipl-float-chip-bottom {
+  bottom: 4%;
+  left: -2%;
+  animation: sipl-chip-float 7s ease-in-out -2s infinite;
+}
+.sipl-chip-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #6ee7b7;
+  box-shadow: 0 0 12px rgba(110,231,183,.7);
+}
+.sipl-card-rule {
+  height: 1px;
+  background: linear-gradient(90deg, rgba(148,163,184,.14), transparent);
+}
+.sipl-scan-line {
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(125,211,252,.45), transparent);
+  opacity: .6;
+  animation: sipl-scan 6s ease-in-out infinite;
+}
+.sipl-status-pulse {
+  box-shadow: 0 0 0 4px rgba(52,211,153,.09), 0 0 14px rgba(52,211,153,.4);
+  animation: sipl-pulse 2.8s ease-in-out infinite;
+}
+.sipl-enter {
+  animation: sipl-enter .7s cubic-bezier(.2,.7,.2,1) both;
+}
+.sipl-enter:nth-of-type(2) {
+  animation-delay: .08s;
+}
+.sipl-alert {
+  border: 1px solid rgba(251,191,36,.2);
+  background: rgba(120,77,14,.14);
+  color: #fde68a;
+}
+.sipl-empty-state {
+  background: linear-gradient(145deg, rgba(15,23,38,.58), rgba(11,18,30,.3));
+}
+.sipl-filter-active {
+  border-color: rgba(147,197,253,.75);
+  background: linear-gradient(110deg, #bfdbfe, #7dd3fc);
+  color: #07111e;
+  box-shadow: 0 5px 18px rgba(96,165,250,.14);
+}
+.sipl-pdf-frame {
+  box-shadow: 0 24px 70px rgba(0,0,0,.2);
+}
+.sipl-network-note {
+  border: 1px solid rgba(251,191,36,.16);
+  background: linear-gradient(110deg, rgba(120,77,14,.12), rgba(20,27,38,.48));
+}
+.sipl-modal-backdrop {
+  background: rgba(2,6,14,.78);
+  backdrop-filter: blur(12px);
+  animation: sipl-fade-in .18s ease both;
+}
+.sipl-modal {
+  border: 1px solid rgba(148,163,184,.2);
+  background: linear-gradient(145deg, #172337, #0c1421);
+  box-shadow: 0 30px 100px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.06);
+  animation: sipl-modal-in .24s cubic-bezier(.2,.8,.2,1) both;
+}
+@keyframes sipl-enter {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes sipl-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes sipl-modal-in {
+  from { opacity: 0; transform: translateY(10px) scale(.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes sipl-card-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
+@keyframes sipl-chip-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+@keyframes sipl-drift {
+  from { transform: translate3d(-2%, -1%, 0) scale(.96); }
+  to { transform: translate3d(3%, 3%, 0) scale(1.05); }
+}
+@keyframes sipl-scan {
+  0%, 100% { transform: translateY(0); opacity: 0; }
+  15%, 75% { opacity: .55; }
+  90% { transform: translateY(320px); opacity: 0; }
+}
+@keyframes sipl-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .65; }
+}
+@media (max-width: 640px) {
+  .sipl-grid-overlay { background-size: 38px 38px; opacity: .14; }
+  .sipl-ambient { filter: blur(65px); opacity: .12; }
+  .sipl-panel { backdrop-filter: blur(14px); }
+  .sipl-pdf-frame iframe { min-height: 480px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sipl-app *,
+  .sipl-app *::before,
+  .sipl-app *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+  }
 }
