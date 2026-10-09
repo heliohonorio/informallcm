@@ -279,7 +279,7 @@ function Index() {
             <div className="mt-8 flex flex-wrap gap-x-5 gap-y-3 text-[11px] font-medium text-slate-400">
               <span className="inline-flex items-center gap-2"><CheckCircle2 size={15} className="text-emerald-300" /> Código exato da unidade</span>
               <span className="inline-flex items-center gap-2"><CheckCircle2 size={15} className="text-emerald-300" /> Unidades ativas</span>
-              <span className="inline-flex items-center gap-2"><LockKeyhole size={14} className="text-sky-300" /> Rede interna PM</span>
+              <span className="inline-flex items-center gap-2"><LockKeyhole size={14} className="text-sky-300" /> Acesso à intranet</span>
             </div>
           </div>
 
@@ -380,7 +380,7 @@ function Index() {
 
         <aside className="sipl-network-note mt-7 flex items-start gap-3.5 rounded-2xl px-4 py-4 sm:px-5">
           <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-amber-300/10 text-amber-200"><LockKeyhole size={16} /></div>
-          <div><p className="text-[11px] font-bold text-amber-100">Uso exclusivo na rede CMDO / INTRANET</p><p className="mt-1 text-[11px] leading-5 text-slate-400">O relatório e o download dependem do acesso ao SIPL pela rede interna da Polícia Militar. Fora dessa rede, o documento pode não carregar.</p></div>
+          <div><p className="text-[11px] font-bold text-amber-100">Uso exclusivo na rede CMDO / INTRANET</p><p className="mt-1 text-[11px] leading-5 text-slate-400">O relatório e o download dependem de uma conexão autorizada à intranet. Fora dessa rede, o documento pode não carregar.</p></div>
         </aside>
 
         {confirmandoPdf && (
@@ -398,7 +398,7 @@ function Index() {
         <footer className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-white/[.07] py-5 text-center sm:flex-row sm:text-left">
           <div className="flex items-center gap-2 text-[10px] font-semibold tracking-[.05em] text-slate-500"><ShieldCheck size={14} className="text-sky-300/70" /> SIPL <span className="text-slate-700">/</span> Consulta LCM</div>
           <div className="flex flex-col items-center gap-2 sm:items-end">
-            <div className="text-[10px] text-slate-600">Interface de consulta • Polícia Militar • Rede interna</div>
+            <div className="text-[10px] text-slate-600">Interface de consulta • Rede interna</div>
             <div className="flex items-center gap-2 text-[10px] text-slate-400"><Activity size={13} className="text-sky-300" /><span>Visitas totais</span><img src="https://visitor-badge.one9x.com/badge?page_id=sipl-consulta-lcm&namespace=sipl&left_text=VISITAS&left_color=0f172a&right_color=0ea5e9" alt="Contador total de visitas do SIPL" loading="eager" referrerPolicy="no-referrer" className="h-5" /></div>
           </div>
         </footer>
