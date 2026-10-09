@@ -131,11 +131,11 @@ type CategoriaMaterial = "Todos" | "Colete" | "EPI" | "Informática" | "Telecomu
 
 const CATEGORIAS: Array<{ nome: CategoriaMaterial; termos: string[] }> = [
   { nome: "Colete", termos: ["colete", "balistico", "balística"] },
-  { nome: "EPI", termos: ["epi", "capacete", "luva", "oculos", "óculos", "coturno", "equipamento de protecao", "equipamento de proteção"] },
-  { nome: "Informática", termos: ["informatica", "informática", "computador", "monitor", "impressora", "notebook", "teclado", "mouse"] },
-  { nome: "Telecomunicação", termos: ["telecom", "radio", "rádio", "comunicacao", "comunicação", "telefone"] },
+  { nome: "EPI", termos: ["epi", "capacete", "algema", "luva", "oculos", "óculos", "coturno", "equipamento de protecao", "equipamento de proteção"] },
+  { nome: "Informática", termos: ["informatica", "informática", "computador", "monitor", "impressora", "notebook", "teclado", "mouse", "microcomputador", "access point", "switch", "no break", "nobreak", "roteador", "servidor", "scanner", "tablet", "projetor", "estabilizador"] },
+  { nome: "Telecomunicação", termos: ["telecom", "radio", "rádio", "comunicacao", "comunicação", "telefone", "transceptor", "motorola", "apx", "uhf", "vhf", "antena", "repetidora", "hdt"] },
   { nome: "Munição", termos: ["municao", "munição", "cartucho", "projetil", "projétil"] },
-  { nome: "Viatura", termos: ["viatura", "veiculo", "veículo", "automovel", "automóvel"] },
+  { nome: "Viatura", termos: ["viatura", "veiculo", "veículo", "automovel", "automóvel", "motocicleta", "caminhonete", "onibus", "ônibus"] },
   { nome: "Arma", termos: ["arma", "pistola", "fuzil", "carabina", "revolver", "revólver"] },
   { nome: "Lote", termos: ["lote"] },
   { nome: "Diversos", termos: ["diverso", "diversos"] },
@@ -208,7 +208,7 @@ function Index() {
         if (!cancelado) setTextoPdf(texto);
       })
       .catch(() => {
-        if (!cancelado) setErroFiltros("Não foi possível ler o PDF automaticamente. Se o SIPL bloquear o acesso ao arquivo, o relatório continuará disponível no visualizador abaixo.");
+        if (!cancelado) setErroFiltros("O SIPL não permite a leitura automática do PDF. Clique em \"Baixar PDF\" e depois em \"Carregar o PDF baixado para filtrar\".");
       })
       .finally(() => {
         if (!cancelado) setCarregandoFiltros(false);
@@ -430,6 +430,7 @@ function Index() {
                   </div>
                   {categoriasDisponiveis.length > 0 && <div className="mt-4 flex flex-wrap gap-2">{(["Todos", ...categoriasDisponiveis] as CategoriaMaterial[]).map((categoria) => <button key={categoria} type="button" onClick={() => setCategoriaAtiva(categoria)} className={"sipl-filter-chip inline-flex items-center gap-1.5 rounded-xl border px-3.5 py-2.5 text-[11px] font-semibold transition-all duration-200 " + (categoriaAtiva === categoria ? "sipl-filter-active" : "border-white/[.08] bg-white/[.025] text-slate-400 hover:border-sky-300/25 hover:bg-sky-300/[.05] hover:text-slate-200")}>{categoriaAtiva === categoria && <Check size={12} />}{categoria}</button>)}</div>}
                   {erroFiltros && <p className="mt-3 text-[11px] leading-5 text-amber-200/80">{erroFiltros}</p>}
+                  {!carregandoFiltros && <label className="sipl-secondary-button mt-3 inline-flex cursor-pointer items-center gap-1.5 rounded-xl px-3 py-2 text-[11px] font-semibold"><ArrowDownToLine size={13} /> {textoPdf ? "Carregar outro PDF" : "Carregar o PDF baixado para filtrar"}<input type="file" accept="application/pdf,.pdf" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; event.target.value = ""; if (!file) return; setCarregandoFiltros(true); setErroFiltros(""); void extrairTextoPdf(file).then((texto) => { setTextoPdf(texto); setCategoriaAtiva("Todos"); }).catch(() => setErroFiltros("Não foi possível ler este arquivo PDF.")).finally(() => setCarregandoFiltros(false)); }} /></label>}
                   {textoPdf && <div className="sipl-pdf-text mt-4 max-h-[360px] overflow-auto rounded-2xl border border-white/[.07] bg-[#080e18]/75 p-3">{linhasFiltradas.length > 0 ? <div className="space-y-0.5">{linhasFiltradas.map((linha, index) => <div key={index} className="border-b border-white/[.045] px-2.5 py-2 font-mono text-[10px] leading-5 text-slate-300 last:border-0">{linha}</div>)}</div> : <div className="px-2 py-8 text-center text-[11px] text-slate-500">Nenhum item encontrado nesta categoria.</div>}</div>}
                 </div>
               )}
