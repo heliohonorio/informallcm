@@ -464,3 +464,10 @@ display: none !important;
 .sipl-app button:focus-visible, .sipl-app a:focus-visible { outline: 3px solid #7dd3fc; outline-offset: 3px; }
 .sipl-app button:disabled { opacity: .65; }
 @media (max-width: 640px) { .sipl-app .sipl-network-note p, .sipl-app .sipl-alert { font-size: 13px; line-height: 1.65; } }
+
+
+/* Rodapé discreto: preservar os tons originais */
+.sipl-app footer [class~="text-slate-500"] { color: #64748b !important; }
+.sipl-app footer [class~="text-slate-600"] { color: #475569 !important; }
+.sipl-app footer [class~="text-slate-700"] { color: #334155 !important; }
+.sipl-app footer [class~="text-slate-400"] { color: #94a3b8 !important; }
