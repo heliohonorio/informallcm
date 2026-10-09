@@ -262,9 +262,9 @@ function Index() {
           </div>
         </header>
 
-        <aside className="mt-4 flex items-start gap-3.5 rounded-2xl border border-slate-400/20 bg-slate-400/[.05] px-4 py-4 sm:px-5" role="status" aria-label="Sistema em construção">
-          <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-slate-400/10 text-slate-400"><Settings size={16} /></div>
-          <div><p className="text-[11px] font-bold uppercase tracking-[.12em] text-slate-300">Sistema em construção</p><p className="mt-1 text-[12px] leading-5 text-slate-400">Estamos trabalhando para aprimorar e ampliar as funcionalidades do sistema.</p></div>
+        <aside className="mt-4 flex items-start gap-3.5 rounded-2xl border border-amber-300/30 bg-amber-300/[.07] px-4 py-4 sm:px-5" role="status" aria-label="Sistema em construção">
+          <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-amber-300/15 text-amber-300"><Settings size={16} /></div>
+          <div><p className="text-[11px] font-bold uppercase tracking-[.12em] text-amber-200">Sistema em construção</p><p className="mt-1 text-[12px] leading-5 text-amber-100/80">Estamos trabalhando para aprimorar e ampliar as funcionalidades do sistema.</p></div>
         </aside>
 
         <section className="grid flex-1 content-start items-center gap-9 pb-9 pt-8 sm:pt-12 lg:grid-cols-[1.08fr_.92fr] lg:gap-12 lg:pb-14 lg:pt-14">
@@ -395,15 +395,15 @@ function Index() {
           </div>
         )}
 
-        <footer className="mt-10 flex flex-col items-center gap-4 border-t border-white/[.05] py-5 text-center">
-          <div className="flex w-full flex-col items-center justify-between gap-3 sm:flex-row">
-            <div className="flex items-center gap-2 text-[10px] font-semibold tracking-[.05em] text-[#334155]"><ShieldCheck size={14} className="text-[#334155]" /> SIPL <span className="text-[#334155]">/</span> Consulta LCM</div>
+        <footer className="mt-10 border-t border-white/[.05] py-5">
+          <div className="flex w-full flex-col items-center justify-between gap-4 text-center sm:flex-row sm:gap-5 sm:text-left">
+            <div className="flex shrink-0 items-center gap-2 text-[10px] font-semibold tracking-[.05em] text-[#334155]"><ShieldCheck size={14} className="text-[#334155]" /> SIPL <span className="text-[#334155]">/</span> Consulta LCM</div>
             <div className="flex flex-col items-center gap-1 text-[10px] text-[#334155] sm:items-end">
               <div>Criado por: Sd PM Filho</div>
               <div>Diretoria de Logística • Setor de Auditoria e Sistemas</div>
             </div>
+            <div className="flex shrink-0 items-center justify-center gap-2 text-[10px] text-[#334155]"><Activity size={13} className="shrink-0 text-[#334155]" /><span className="whitespace-nowrap">Visitas totais</span><img src="https://visitor-badge.one9x.com/badge?page_id=sipl-consulta-lcm&namespace=sipl&left_text=VISITAS&left_color=0b1320&right_color=334155" alt="Contador total de visitas do SIPL" loading="eager" referrerPolicy="no-referrer" className="h-5 opacity-80" /></div>
           </div>
-          <div className="flex items-center justify-center gap-2 text-[10px] text-[#334155]"><Activity size={13} className="text-[#334155]" /><span>Visitas totais</span><img src="https://visitor-badge.one9x.com/badge?page_id=sipl-consulta-lcm&namespace=sipl&left_text=VISITAS&left_color=0b1320&right_color=334155" alt="Contador total de visitas do SIPL" loading="eager" referrerPolicy="no-referrer" className="h-5 opacity-80" /></div>
         </footer>
       </div>
     </main>
