@@ -572,3 +572,24 @@ display: none !important;
   .sipl-app header .text-right { max-width: 175px; }
 }
 
+
+
+/* Rodapé isolado no fim da página, mantendo a tipografia compacta original */
+.sipl-app footer {
+  margin-top: auto !important;
+  padding-top: 1.5rem !important;
+  padding-bottom: .75rem !important;
+  line-height: 1.4 !important;
+  flex-shrink: 0;
+}
+.sipl-app footer [class~="text-[9px]"],
+.sipl-app footer [class~="text-[10px]"],
+.sipl-app footer [class~="text-[11px]"],
+.sipl-app footer [class~="text-[12px]"],
+.sipl-app footer [class~="text-[13px]"],
+.sipl-app footer [class~="text-[14px]"],
+.sipl-app footer [class~="text-[15px]"] {
+  font-size: 10px !important;
+  line-height: 1.4 !important;
+}
+.sipl-app footer img { height: 20px !important; }
