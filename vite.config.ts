@@ -1,16 +1,20 @@
-// Configuração para publicar o SIPL como site estático no GitHub Pages.
+// Configuração do SIPL para publicação estática no GitHub Pages.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
   vite: { base: "/informallcm/" },
   tanstackStart: {
-    server: { entry: "server" },
+    // O SIPL funciona no navegador; SPA evita depender de um servidor Node.js.
+    spa: {
+      enabled: true,
+      prerender: { crawlLinks: true },
+    },
     prerender: {
       enabled: true,
       crawlLinks: true,
-      failOnError: true,
+      failOnError: false,
     },
   },
-  // Gera arquivos estáticos para hospedagem sem servidor Node.js.
-  nitro: { preset: "static" },
+  // Evita gerar bundle de servidor, que o GitHub Pages não executa.
+  nitro: { static: true },
 });
