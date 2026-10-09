@@ -473,34 +473,84 @@ display: none !important;
 .sipl-app footer [class~="text-slate-400"] { color: #94a3b8 !important; }
 
 
-/* Página inicial compacta em telas de computador: prioriza caber sem rolagem */
-@media (min-width: 768px) and (min-height: 700px) {
+/* Espaçamento equilibrado: preservar respiro sem criar um vão excessivo */
+@media (min-width: 768px) {
   .sipl-app > div.relative.z-10 {
     min-height: 100svh;
-    padding-bottom: .75rem;
+    padding-bottom: 1.5rem;
   }
   .sipl-app .sipl-topbar {
-    padding-top: .65rem;
-    padding-bottom: .65rem;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
   }
   .sipl-app section.grid {
-    padding-top: .75rem;
-    padding-bottom: .75rem;
-    gap: 1rem;
+    padding-top: 1.75rem;
+    padding-bottom: 1.5rem;
+    gap: 1.5rem;
   }
   .sipl-app section.grid h1 {
-    font-size: clamp(2.1rem, 3.5vw, 3.2rem);
-    line-height: 1;
+    font-size: clamp(2.5rem, 4vw, 3.8rem);
+    line-height: 1.04;
   }
   .sipl-app section.sipl-panel {
-    padding: 1rem;
+    padding: 1.5rem;
   }
   .sipl-app .sipl-network-note {
-    margin-top: .75rem;
+    margin-top: 1.25rem;
   }
   .sipl-app footer {
-    margin-top: .75rem;
-    padding-top: .5rem;
+    margin-top: 1.25rem;
+    padding-top: .9rem;
+    padding-bottom: .75rem;
+  }
+}
+@media (min-width: 1024px) {
+  .sipl-app section.grid {
+    padding-top: 2rem;
+    padding-bottom: 1.75rem;
+    gap: 1.75rem;
+  }
+  .sipl-app section.grid h1 {
+    font-size: clamp(2.7rem, 4vw, 3.9rem);
+  }
+  .sipl-app section.sipl-panel {
+    padding: 1.65rem;
+  }
+}
+@media (max-width: 767px) {
+  .sipl-app > div.relative.z-10 {
+    padding-bottom: 1.25rem;
+  }
+  .sipl-app section.grid {
+    gap: 1.25rem;
+    padding-top: 1.5rem;
+    padding-bottom: 1.25rem;
+  }
+  .sipl-app section.grid h1 {
+    font-size: clamp(2.35rem, 9vw, 3.3rem);
+    line-height: 1.04;
+  }
+  .sipl-app section.sipl-panel {
+    padding: 1.15rem;
+    border-radius: 1.35rem;
+  }
+  .sipl-app section.sipl-panel > div:nth-child(2) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .sipl-app section.sipl-panel > div:nth-child(2) > button {
+    width: 100%;
+    min-width: 0;
+  }
+  .sipl-filter-chip {
+    padding: .6rem .8rem;
+    font-size: 11px;
+  }
+  .sipl-app .sipl-network-note {
+    margin-top: 1rem;
+  }
+  .sipl-app footer {
+    margin-top: 1rem;
+    padding-top: .75rem;
     padding-bottom: .5rem;
   }
 }
