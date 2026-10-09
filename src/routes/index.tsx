@@ -144,6 +144,29 @@ function Index() {
     void carregarTabelaOpm().then(setOpms).catch((error) => setTabelaErro(error instanceof Error ? error.message : "Erro ao carregar a Tabela OPM."));
   }, []);
 
+  const [statusIntranet, setStatusIntranet] = useState<"verificando" | "ok" | "erro">("verificando");
+
+  useEffect(() => {
+    let cancelado = false;
+    async function verificarIntranet() {
+      const controlador = new AbortController();
+      const tempo = setTimeout(() => controlador.abort(), 7000);
+      try {
+        // no-cors: a resposta é opaca, mas o pedido só chega ao servidor se houver
+        // acesso real à rede interna. Falha de rede/DNS/timeout = sem intranet.
+        await fetch(SIPL_LCM_URL, { mode: "no-cors", cache: "no-store", signal: controlador.signal });
+        if (!cancelado) setStatusIntranet("ok");
+      } catch {
+        if (!cancelado) setStatusIntranet("erro");
+      } finally {
+        clearTimeout(tempo);
+      }
+    }
+    void verificarIntranet();
+    const intervalo = setInterval(() => void verificarIntranet(), 60000);
+    return () => { cancelado = true; clearInterval(intervalo); };
+  }, []);
+
 
   function handleConsultar() {
     setErro("");
@@ -227,10 +250,15 @@ function Index() {
               <div className="mt-1.5 text-[10px] font-semibold uppercase tracking-[.2em] text-slate-400">Consulta LCM</div>
             </div>
           </a>
-          <div className="flex items-center gap-2 rounded-full border border-white/10 bg-slate-900/55 px-3 py-2 backdrop-blur-xl sm:px-4">
-            <span className="sipl-status-pulse h-2 w-2 rounded-full bg-emerald-400" />
-            <span className="hidden text-[10px] font-bold uppercase tracking-[.16em] text-slate-300 sm:inline">Acesso à intranet</span>
-            <span className="text-[10px] font-bold uppercase tracking-[.16em] text-slate-300 sm:hidden">Intranet</span>
+          <div className="flex flex-col items-end gap-1.5">
+            <div className="flex items-center gap-2 rounded-full border border-white/10 bg-slate-900/55 px-3 py-2 backdrop-blur-xl sm:px-4">
+              <span className={"sipl-status-pulse h-2 w-2 rounded-full " + (statusIntranet === "ok" ? "bg-emerald-400" : statusIntranet === "erro" ? "bg-red-500" : "bg-amber-400")} />
+              <span className="hidden text-[10px] font-bold uppercase tracking-[.16em] text-slate-300 sm:inline">{statusIntranet === "ok" ? "Acesso à intranet" : statusIntranet === "erro" ? "Sem acesso à intranet" : "Verificando intranet"}</span>
+              <span className="text-[10px] font-bold uppercase tracking-[.16em] text-slate-300 sm:hidden">{statusIntranet === "ok" ? "Intranet" : statusIntranet === "erro" ? "Sem intranet" : "Verificando"}</span>
+            </div>
+            <span className="max-w-[220px] text-right text-[9px] leading-[1.4] text-slate-500">
+              {statusIntranet === "ok" ? "Conexão com o SIPL verificada e ativa." : statusIntranet === "erro" ? "O SIPL não respondeu. Verifique se a máquina está conectada à intranet." : "Verificando a conexão com o SIPL..."}
+            </span>
           </div>
         </header>
 
