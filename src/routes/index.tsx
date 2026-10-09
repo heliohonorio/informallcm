@@ -267,7 +267,7 @@ function Index() {
           <div className="min-w-0"><p className="text-[10px] font-bold uppercase tracking-[.12em] text-amber-200">Sistema em construção</p><p className="text-[11px] leading-4 text-amber-100/80">Estamos trabalhando para aprimorar e ampliar as funcionalidades do sistema.</p></div>
         </aside>
 
-        <section className="grid flex-1 content-start items-center gap-5 pb-5 pt-4 sm:pt-5 lg:grid-cols-[1.08fr_.92fr] lg:gap-6 lg:pb-5 lg:pt-6">
+        <section className="grid flex-none content-start items-center gap-5 pb-5 pt-4 sm:pt-5 lg:grid-cols-[1.08fr_.92fr] lg:gap-6 lg:pb-5 lg:pt-6">
           <div className="sipl-enter">
             <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-sky-300/20 bg-sky-300/[.07] px-3.5 py-2 text-[10px] font-bold uppercase tracking-[.2em] text-sky-200">
               
