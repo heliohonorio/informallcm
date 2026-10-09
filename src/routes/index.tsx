@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Activity, ArrowDownToLine, ArrowUpRight, Check, CheckCircle2, ChevronRight, CircleHelp, Database, ExternalLink, FileSearch, Fingerprint, LockKeyhole, Search, Settings, ShieldCheck, X } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -132,6 +132,7 @@ function Index() {
   const [tabelaErro, setTabelaErro] = useState("");
   const [inicio, setInicio] = useState("");
   const [indiceSugestao, setIndiceSugestao] = useState(0);
+  const sugestoesRef = useRef<HTMLDivElement>(null);
   const [relatorioUrl, setRelatorioUrl] = useState("");
   const [relatorioSolicitado, setRelatorioSolicitado] = useState(false);
   const [erro, setErro] = useState("");
@@ -141,7 +142,16 @@ function Index() {
   const [baixandoPdf, setBaixandoPdf] = useState(false);
   const codigoOpm = inicio.length === 9 ? inicio : "";
   const opmSelecionada = useMemo(() => inicio.length === 9 ? opms.find((opm) => opm.codigo === codigoOpm) : undefined, [opms, codigoOpm]);
-  const sugestoes = useMemo(() => inicio ? opms.filter((opm) => opm.codigo.startsWith(inicio)).slice(0, 8) : [], [opms, inicio]);
+  const sugestoes = useMemo(() => inicio && inicio.length < 9 ? opms.filter((opm) => opm.codigo.startsWith(inicio)).slice(0, 8) : [], [opms, inicio]);
+
+  useEffect(() => {
+    const lista = sugestoesRef.current;
+    if (!lista || sugestoes.length === 0) return;
+    const area = lista.getBoundingClientRect();
+    if (area.bottom > window.innerHeight - 20 || area.top < 0) {
+      lista.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, [sugestoes.length, inicio]);
 
   useEffect(() => {
     void carregarTabelaOpm().then(setOpms).catch((error) => setTabelaErro(error instanceof Error ? error.message : "Erro ao carregar a Tabela OPM."));
@@ -333,7 +343,7 @@ function Index() {
               <span className="mb-2 block text-[11px] font-bold uppercase tracking-[.14em] text-slate-400">Código da unidade</span>
               <div className="sipl-input-wrap relative">
                 <div className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-slate-500"><Fingerprint size={17} /></div>
-                <input value={inicio} onChange={(event) => { const value = event.target.value.replace(/\D/g, "").slice(0, 9); setInicio(value); setIndiceSugestao(0); setErro(""); }} onKeyDown={(event) => { if (sugestoes.length > 0 && inicio.length < 5) { if (event.key === "ArrowDown") { event.preventDefault(); setIndiceSugestao((current) => Math.min(current + 1, sugestoes.length - 1)); return; } if (event.key === "ArrowUp") { event.preventDefault(); setIndiceSugestao((current) => Math.max(current - 1, 0)); return; } if (event.key === "Enter") { event.preventDefault(); const escolhida = sugestoes[Math.min(indiceSugestao, sugestoes.length - 1)]; if (escolhida) { setInicio(escolhida.codigo); setIndiceSugestao(0); setErro(""); } return; } } if (event.key === "Enter") void handleConsultar(); }} inputMode="numeric" maxLength={9} placeholder="Ex.: 201008220" aria-label="Código exato da OPM" aria-autocomplete="list" aria-controls="sipl-opm-suggestions" className="sipl-input h-[50px] w-full rounded-2xl border border-white/10 bg-[#0a111d]/80 pl-12 pr-[70px] font-mono text-[16px] font-medium tracking-[.08em] text-white outline-none transition-all duration-300 placeholder:font-sans placeholder:text-[13px] placeholder:tracking-normal placeholder:text-slate-600 focus:border-sky-300/70 focus:ring-4 focus:ring-sky-300/10" />
+                <input value={inicio} onChange={(event) => { const value = event.target.value.replace(/\D/g, "").slice(0, 9); setInicio(value); setIndiceSugestao(0); setErro(""); }} onKeyDown={(event) => { if (sugestoes.length > 0 && inicio.length < 9) { if (event.key === "ArrowDown") { event.preventDefault(); setIndiceSugestao((current) => Math.min(current + 1, sugestoes.length - 1)); return; } if (event.key === "ArrowUp") { event.preventDefault(); setIndiceSugestao((current) => Math.max(current - 1, 0)); return; } if (event.key === "Enter") { event.preventDefault(); const escolhida = sugestoes[Math.min(indiceSugestao, sugestoes.length - 1)]; if (escolhida) { setInicio(escolhida.codigo); setIndiceSugestao(0); setErro(""); } return; } } if (event.key === "Enter") void handleConsultar(); }} inputMode="numeric" maxLength={9} placeholder="Ex.: 201008220" aria-label="Código exato da OPM" aria-autocomplete="list" aria-controls="sipl-opm-suggestions" className="sipl-input h-[50px] w-full rounded-2xl border border-white/10 bg-[#0a111d]/80 pl-12 pr-[70px] font-mono text-[16px] font-medium tracking-[.08em] text-white outline-none transition-all duration-300 placeholder:font-sans placeholder:text-[13px] placeholder:tracking-normal placeholder:text-slate-600 focus:border-sky-300/70 focus:ring-4 focus:ring-sky-300/10" />
                 <span className={"absolute right-3 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 font-mono text-[10px] " + (inicio.length === 9 ? "bg-emerald-300/10 text-emerald-200" : "bg-white/[.04] text-slate-500")}>{inicio.length}/9</span>
               </div>
               {inicio.length === 9 && <div className={"mt-3 flex items-start gap-2.5 rounded-2xl border px-3.5 py-3 text-left text-[12px] leading-5 " + (opmSelecionada ? "border-emerald-300/20 bg-emerald-300/[.06] text-emerald-100" : "border-amber-300/20 bg-amber-300/[.06] text-amber-100")}>{opmSelecionada ? <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-emerald-300" /> : <CircleHelp size={16} className="mt-0.5 shrink-0 text-amber-300" />}<span className="min-w-0 break-words">{opmSelecionada ? <><strong className="font-semibold">{opmSelecionada.codigo}</strong><span className="mx-2 opacity-40">/</span>{opmSelecionada.nome}</> : "Código não localizado entre as unidades ativas. Confira os nove dígitos."}</span></div>}
@@ -343,7 +353,7 @@ function Index() {
             </button>
           </div>
 
-          {sugestoes.length > 0 && inicio.length < 5 && <div id="sipl-opm-suggestions" role="listbox" aria-label="Unidades encontradas" className="sipl-suggestions mt-3 overflow-hidden rounded-2xl border border-white/10 bg-[#0b1320]/95 text-left backdrop-blur-xl"><div className="flex items-center gap-2 px-4 py-3 text-[10px] font-bold uppercase tracking-[.17em] text-slate-500"><Search size={12} /> Unidades encontradas <span className="ml-auto font-normal normal-case tracking-normal">↑↓ navegar · Enter selecionar</span></div>{sugestoes.map((opm, index) => <button key={opm.codigo} role="option" aria-selected={index === indiceSugestao} type="button" onMouseEnter={() => setIndiceSugestao(index)} onClick={() => { setInicio(opm.codigo); setIndiceSugestao(0); setErro(""); }} className={"flex w-full items-center justify-between gap-4 border-t border-white/[.06] px-4 py-3.5 text-left transition-colors " + (index === indiceSugestao ? "bg-sky-300/[.10] ring-1 ring-inset ring-sky-300/30" : "hover:bg-sky-300/[.06]")}><span className="shrink-0 font-mono text-[12px] font-semibold text-sky-200">{opm.codigo}</span><span className="min-w-0 truncate text-[12px] text-slate-400">{opm.nome}</span><ChevronRight size={14} className="shrink-0 text-slate-600" /></button>)}</div>}
+          {sugestoes.length > 0 && inicio.length < 9 && <div ref={sugestoesRef} id="sipl-opm-suggestions" role="listbox" aria-label="Unidades encontradas" className="sipl-suggestions mt-3 overflow-hidden rounded-2xl border border-white/10 bg-[#0b1320]/95 text-left backdrop-blur-xl"><div className="flex items-center gap-2 px-4 py-3 text-[10px] font-bold uppercase tracking-[.17em] text-slate-500"><Search size={12} /> Unidades encontradas <span className="ml-auto font-normal normal-case tracking-normal">↑↓ navegar · Enter selecionar</span></div>{sugestoes.map((opm, index) => <button key={opm.codigo} role="option" aria-selected={index === indiceSugestao} type="button" onMouseEnter={() => setIndiceSugestao(index)} onClick={() => { setInicio(opm.codigo); setIndiceSugestao(0); setErro(""); }} className={"flex w-full items-center justify-between gap-4 border-t border-white/[.06] px-4 py-3.5 text-left transition-colors " + (index === indiceSugestao ? "bg-sky-300/[.10] ring-1 ring-inset ring-sky-300/30" : "hover:bg-sky-300/[.06]")}><span className="shrink-0 font-mono text-[12px] font-semibold text-sky-200">{opm.codigo}</span><span className="min-w-0 truncate text-[12px] text-slate-400">{opm.nome}</span><ChevronRight size={14} className="shrink-0 text-slate-600" /></button>)}</div>}
           <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[9px] leading-4 text-slate-500"><span className="inline-flex items-center gap-1.5"><LockKeyhole size={12} /> O código é enviado exatamente como informado.</span><span className="hidden h-1 w-1 rounded-full bg-slate-700 sm:block" /><span>Somente OPMs ativas na tabela são aceitas.</span></div>
         </section>
 
