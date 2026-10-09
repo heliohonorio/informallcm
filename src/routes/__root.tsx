@@ -79,7 +79,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "SIPL • Consulta LCM" },
-      { name: "description", content: "Consulta de materiais e patrimônios por OPM no SIPL, para uso na rede interna da Polícia Militar." },
+      { name: "description", content: "Consulta de materiais e patrimônios por código de unidade, para uso em rede interna autorizada." },
       { name: "author", content: "SIPL • Consulta LCM" },
       { property: "og:title", content: "SIPL • Consulta LCM" },
       { property: "og:description", content: "Consulta de materiais e patrimônios por OPM no SIPL." },
