@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Activity, ArrowDownToLine, ArrowUpRight, Check, CheckCircle2, ChevronRight, CircleHelp, Database, ExternalLink, FileSearch, Fingerprint, LockKeyhole, Search, ShieldCheck, X } from "lucide-react";
+import { Activity, ArrowDownToLine, ArrowUpRight, Check, CheckCircle2, ChevronRight, CircleHelp, Database, ExternalLink, FileSearch, Fingerprint, LockKeyhole, Search, Settings, ShieldCheck, X } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({ meta: [{ title: "Consulta LCM | SIPL" }] }),
@@ -262,9 +262,9 @@ function Index() {
           </div>
         </header>
 
-        <aside className="mt-4 flex items-start gap-3.5 rounded-2xl border border-amber-300/20 bg-amber-300/[.06] px-4 py-4 sm:px-5" role="status" aria-label="Aviso sobre LCM de viaturas">
-          <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-amber-300/10 text-amber-200"><CircleHelp size={16} /></div>
-          <div><p className="text-[11px] font-bold uppercase tracking-[.12em] text-amber-100">Aviso • LCM de viaturas</p><p className="mt-1 text-[12px] leading-5 text-slate-300">A consulta LCM de viaturas ainda não está disponível. Essa funcionalidade será liberada futuramente.</p></div>
+        <aside className="mt-4 flex items-start gap-3.5 rounded-2xl border border-slate-400/20 bg-slate-400/[.05] px-4 py-4 sm:px-5" role="status" aria-label="Sistema em construção">
+          <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-slate-400/10 text-slate-400"><Settings size={16} /></div>
+          <div><p className="text-[11px] font-bold uppercase tracking-[.12em] text-slate-300">Sistema em construção</p><p className="mt-1 text-[12px] leading-5 text-slate-400">Estamos trabalhando para aprimorar e ampliar as funcionalidades do sistema.</p></div>
         </aside>
 
         <section className="grid flex-1 content-start items-center gap-9 pb-9 pt-8 sm:pt-12 lg:grid-cols-[1.08fr_.92fr] lg:gap-12 lg:pb-14 lg:pt-14">
