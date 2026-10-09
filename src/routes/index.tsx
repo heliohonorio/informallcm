@@ -259,6 +259,11 @@ function Index() {
           </div>
         </header>
 
+        <aside className="mt-4 flex items-start gap-3.5 rounded-2xl border border-amber-300/20 bg-amber-300/[.06] px-4 py-4 sm:px-5" role="status" aria-label="Aviso sobre LCM de viaturas">
+          <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-amber-300/10 text-amber-200"><CircleHelp size={16} /></div>
+          <div><p className="text-[11px] font-bold uppercase tracking-[.12em] text-amber-100">Aviso • LCM de viaturas</p><p className="mt-1 text-[12px] leading-5 text-slate-300">A consulta LCM de viaturas ainda não está disponível. Essa funcionalidade será liberada futuramente.</p></div>
+        </aside>
+
         <section className="grid flex-1 content-start items-center gap-9 pb-9 pt-8 sm:pt-12 lg:grid-cols-[1.08fr_.92fr] lg:gap-12 lg:pb-14 lg:pt-14">
           <div className="sipl-enter">
             <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-sky-300/20 bg-sky-300/[.07] px-3.5 py-2 text-[10px] font-bold uppercase tracking-[.2em] text-sky-200">
@@ -392,7 +397,10 @@ function Index() {
 
         <footer className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-white/[.07] py-5 text-center sm:flex-row sm:text-left">
           <div className="flex items-center gap-2 text-[10px] font-semibold tracking-[.05em] text-slate-500"><ShieldCheck size={14} className="text-sky-300/70" /> SIPL <span className="text-slate-700">/</span> Consulta LCM</div>
-          <div className="text-[10px] text-slate-600">Interface de consulta • Polícia Militar • Rede interna</div>
+          <div className="flex flex-col items-center gap-2 sm:items-end">
+            <div className="text-[10px] text-slate-600">Interface de consulta • Polícia Militar • Rede interna</div>
+            <div className="flex items-center gap-2 text-[10px] text-slate-400"><Activity size={13} className="text-sky-300" /><span>Visitas totais</span><img src="https://visitor-badge.one9x.com/badge?page_id=sipl-consulta-lcm&namespace=sipl&left_text=VISITAS&left_color=0f172a&right_color=0ea5e9" alt="Contador total de visitas do SIPL" loading="eager" referrerPolicy="no-referrer" className="h-5" /></div>
+          </div>
         </footer>
       </div>
     </main>
