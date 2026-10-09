@@ -86,28 +86,11 @@ function detectarColunaSituacao(rows: XlsxRow[]) {
 
 function detectarColunasNome(rows: XlsxRow[], codigoCol?: string, situacaoCol?: string) {
   const colunas = Object.keys(rows[0] ?? {});
-
-  // A identificação da OPM é hierárquica. Os campos OPMNxxDES devem ser
-  // lidos em ordem numérica, da primeira coluna para a quinta, e depois
-  // concatenados somente quando houver conteúdo.
-  const hierarquia = colunas
-    .map((key, index) => {
-      const normalizado = normalizarCabecalho(key);
-      const match = normalizado.match(/^opmn(\d+)des$/);
-      return match ? { key, ordem: Number(match[1]), index } : null;
-    })
-    .filter((item): item is { key: string; ordem: number; index: number } => Boolean(item))
-    .filter((item) => item.key !== codigoCol && item.key !== situacaoCol)
-    .sort((a, b) => a.ordem - b.ordem || a.index - b.index)
-    .slice(0, 5)
-    .map((item) => item.key);
-
-  if (hierarquia.length) return hierarquia;
-
-  const fallback = localizarColuna(rows, ["opmn05des", "opmn04des", "opmn03des"]);
-  return fallback && fallback !== codigoCol && fallback !== situacaoCol ? [fallback] : [];
+  const desejadas = ["opmn03des", "opmn04des", "opmn05des", "opmn06des"];
+  return desejadas
+    .map((nome) => colunas.find((key) => normalizarCabecalho(key) === nome))
+    .filter((key): key is string => Boolean(key) && key !== codigoCol && key !== situacaoCol);
 }
-
 function montarNomeOpm(row: XlsxRow, colunasNome: string[]) {
   return colunasNome
     .map((coluna) => String(row[coluna] ?? "").trim())
