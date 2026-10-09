@@ -32,8 +32,11 @@ jobs:
       - name: Build static site
         run: npm run build
 
-      - name: Verify static output
+      - name: Prepare static output
         run: |
+          if [ ! -f .output/public/index.html ] && [ -f .output/public/_shell.html ]; then
+            cp .output/public/_shell.html .output/public/index.html
+          fi
           test -f .output/public/index.html
           cp .output/public/index.html .output/public/404.html
           touch .output/public/.nojekyll
