@@ -554,3 +554,21 @@ display: none !important;
     padding-bottom: .5rem;
   }
 }
+
+/* Legibilidade: ampliar textos pequenos para facilitar a leitura */
+.sipl-app [class~="text-[9px]"] { font-size: 12px !important; line-height: 1.5 !important; }
+.sipl-app [class~="text-[10px]"] { font-size: 12px !important; line-height: 1.55 !important; }
+.sipl-app [class~="text-[11px]"] { font-size: 13px !important; line-height: 1.55 !important; }
+.sipl-app [class~="text-[12px]"] { font-size: 14px !important; line-height: 1.55 !important; }
+.sipl-app [class~="text-[13px]"] { font-size: 14px !important; line-height: 1.55 !important; }
+.sipl-app [class~="text-[14px]"] { font-size: 15px !important; line-height: 1.55 !important; }
+.sipl-app [class~="text-[15px]"] { font-size: 16px !important; line-height: 1.6 !important; }
+.sipl-app header .text-right { max-width: 300px; }
+.sipl-app input.sipl-input { font-size: 20px !important; }
+.sipl-app footer { line-height: 1.6; }
+@media (max-width: 640px) {
+  .sipl-app [class~="text-[9px]"],
+  .sipl-app [class~="text-[10px]"] { font-size: 12px !important; }
+  .sipl-app header .text-right { max-width: 175px; }
+}
+
