@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Activity, ArrowDownToLine, ArrowUpRight, Check, CheckCircle2, ChevronRight, CircleHelp, Database, ExternalLink, FileSearch, Fingerprint, LockKeyhole, Search, Settings, ShieldCheck, X } from "lucide-react";
+import { Activity, ArrowDownToLine, ArrowUpRight, Check, CheckCircle2, ChevronRight, CircleHelp, Database, ExternalLink, FileSearch, Fingerprint, LockKeyhole, Printer, Search, Settings, ShieldCheck, X } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({ meta: [{ title: "Consulta LCM | SIPL" }] }),
@@ -142,6 +142,7 @@ function Index() {
   const [confirmandoPdf, setConfirmandoPdf] = useState(false);
   const [fallbackPdf, setFallbackPdf] = useState(false);
   const [baixandoPdf, setBaixandoPdf] = useState(false);
+  const [tutorialPdfAberto, setTutorialPdfAberto] = useState(false);
   const codigoOpm = inicio.length === 9 ? inicio : "";
   const opmSelecionada = useMemo(() => inicio.length === 9 ? opms.find((opm) => opm.codigo === codigoOpm) : undefined, [opms, codigoOpm]);
   const sugestoes = useMemo(() => inicio && inicio.length < 9 ? opms.filter((opm) => opm.codigo.startsWith(inicio)).slice(0, 8) : [], [opms, inicio]);
@@ -395,7 +396,7 @@ function Index() {
               <p className="mt-1.5 max-w-[600px] text-[12px] leading-5 text-slate-500">Relatório solicitado para a OPM <strong className="font-mono font-semibold text-slate-300">{inicio}</strong>. O conteúdo é retornado diretamente pelo sistema.</p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <button onClick={() => void baixarPdfSipl()} disabled={!relatorioUrl || carregando || baixandoPdf} className="sipl-secondary-button inline-flex h-[43px] items-center justify-center gap-2 rounded-xl px-4 text-[11px] font-bold transition-all disabled:cursor-not-allowed disabled:opacity-35">{baixandoPdf ? <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-slate-500/40 border-t-sky-200" /> : <ArrowDownToLine size={15} />} Baixar PDF</button>
+              <button onClick={() => setTutorialPdfAberto(true)} disabled={!relatorioUrl || carregando} className="sipl-secondary-button inline-flex h-[43px] items-center justify-center gap-2 rounded-xl px-4 text-[11px] font-bold transition-all disabled:cursor-not-allowed disabled:opacity-35">{baixandoPdf ? <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-slate-500/40 border-t-sky-200" /> : <ArrowDownToLine size={15} />} Baixar PDF</button>
               <button onClick={abrirRelatorio} disabled={!relatorioUrl || carregando} className="sipl-secondary-button inline-flex h-[43px] items-center justify-center gap-2 rounded-xl px-4 text-[11px] font-bold transition-all disabled:cursor-not-allowed disabled:opacity-35"><ExternalLink size={14} /> Abrir relatório</button>
             </div>
           </div>
@@ -420,6 +421,38 @@ function Index() {
           <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-amber-300/10 text-amber-200"><LockKeyhole size={14} /></div>
           <div className="min-w-0"><p className="text-[10px] font-bold text-amber-100">Uso exclusivo na rede CMDO / INTRANET</p><p className="text-[10px] leading-4 text-slate-400">O relatório e o download dependem de uma conexão autorizada à intranet.</p></div>
         </aside>
+
+        {tutorialPdfAberto && (
+          <div className="sipl-modal-backdrop fixed inset-0 z-50 flex items-center justify-center px-4 py-8" role="dialog" aria-modal="true" aria-label="Tutorial para baixar o PDF">
+            <div className="sipl-modal w-full max-w-[520px] rounded-[24px] p-5 text-left sm:p-6">
+              <div className="mb-4 flex items-start justify-between gap-4">
+                <div>
+                  <h3 className="font-display text-[21px] font-semibold tracking-[-.04em] text-white">Como baixar o PDF</h3>
+                  <p className="mt-1.5 text-[12px] leading-5 text-slate-400">No relatório aberto, clique na seta de download da barra de ferramentas.</p>
+                </div>
+                <button onClick={() => setTutorialPdfAberto(false)} aria-label="Fechar tutorial" className="rounded-xl p-2 text-slate-500 transition hover:bg-white/[.06] hover:text-white"><X size={17} /></button>
+              </div>
+              <div className="overflow-hidden rounded-xl border border-white/10 bg-[#f8fafc]">
+                <div className="flex h-[72px] items-center gap-4 border-b border-slate-300 px-5 text-slate-600">
+                  <span className="text-[12px] font-medium text-slate-500">PDF</span>
+                  <span className="h-7 w-px bg-slate-300" />
+                  <span className="text-[12px]">−</span>
+                  <span className="rounded border border-slate-300 bg-white px-2 py-1 text-[11px]">100%</span>
+                  <span className="text-[12px]">+</span>
+                  <span className="ml-auto flex items-center gap-4">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-full text-slate-600" aria-label="Imprimir (não clicar)"><Printer size={20} strokeWidth={1.8} /></span>
+                    <span className="flex h-11 w-11 items-center justify-center rounded-full border-[3px] border-sky-500 bg-sky-50 text-sky-700" aria-label="Ícone correto: baixar PDF"><ArrowDownToLine size={22} strokeWidth={2.4} /></span>
+                  </span>
+                </div>
+                <div className="h-3 bg-slate-100" />
+              </div>
+              <p className="mt-3 text-[11px] leading-5 text-slate-400"><span className="font-semibold text-sky-200">Atenção:</span> clique na seta circulada em azul — não na impressora.</p>
+              <div className="mt-5 flex justify-end">
+                <button onClick={() => setTutorialPdfAberto(false)} className="sipl-primary-button inline-flex h-10 items-center justify-center rounded-xl px-5 text-[11px] font-bold text-[#07111e] transition">Entendi</button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {confirmandoPdf && (
           <div className="sipl-modal-backdrop fixed inset-0 z-50 flex items-center justify-center px-4 py-8" role="dialog" aria-modal="true" aria-label="Confirmar download do PDF">
