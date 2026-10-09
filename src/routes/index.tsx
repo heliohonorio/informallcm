@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import pdfWorker from "pdfjs-dist/build/pdf.worker.mjs?url";
-import { Activity, ArrowDownToLine, ArrowUpRight, Check, CheckCircle2, ChevronRight, CircleHelp, Database, ExternalLink, FileSearch, Filter, Fingerprint, LockKeyhole, Search, ShieldCheck, Sparkles, X } from "lucide-react";
+import { Activity, ArrowDownToLine, ArrowUpRight, Check, CheckCircle2, ChevronRight, CircleHelp, Database, ExternalLink, FileSearch, Filter, Fingerprint, LockKeyhole, Search, ShieldCheck, Download, X } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({ meta: [{ title: "Consulta LCM | SIPL" }] }),
@@ -155,7 +155,18 @@ async function extrairTextoPdf(blob: Blob) {
   for (let pagina = 1; pagina <= pdf.numPages; pagina += 1) {
     const page = await pdf.getPage(pagina);
     const content = await page.getTextContent();
-    paginas.push(content.items.map((item) => "str" in item ? item.str : "").join(" "));
+    const linhas: Array<{ y: number; x: number; texto: string }> = [];
+    for (const item of content.items) {
+      if (!("str" in item) || !item.str.trim()) continue;
+      const transform = "transform" in item ? item.transform : undefined;
+      const x = Array.isArray(transform) ? Number(transform[4]) : 0;
+      const y = Array.isArray(transform) ? Number(transform[5]) : 0;
+      let linha = linhas.find((entry) => Math.abs(entry.y - y) < 3);
+      if (!linha) { linha = { y, x, texto: "" }; linhas.push(linha); }
+      linha.texto += (linha.texto ? " " : "") + item.str.trim();
+      linha.x = Math.min(linha.x, x);
+    }
+    paginas.push(linhas.sort((a, b) => b.y - a.y || a.x - b.x).map((linha) => linha.texto).join("\n"));
   }
   return paginas.join("\n");
 }
@@ -206,12 +217,7 @@ function Index() {
   }, [relatorioUrl]);
 
   const linhasPdf = useMemo(() => textoPdf.split(/\\n+/).map((linha) => linha.trim()).filter(Boolean), [textoPdf]);
-  const categoriasDisponiveis = useMemo(() => {
-    if (!linhasPdf.length) return [] as CategoriaMaterial[];
-    const encontradas = new Set<CategoriaMaterial>();
-    linhasPdf.forEach((linha) => encontradas.add(classificarLinhaMaterial(linha)));
-    return CATEGORIAS.map((categoria) => categoria.nome).filter((nome) => encontradas.has(nome));
-  }, [linhasPdf]);
+  const categoriasDisponiveis = useMemo(() => CATEGORIAS.map((categoria) => categoria.nome), []);
   const linhasFiltradas = useMemo(
     () => categoriaAtiva === "Todos" ? linhasPdf : linhasPdf.filter((linha) => classificarLinhaMaterial(linha) === categoriaAtiva),
     [linhasPdf, categoriaAtiva],
@@ -307,7 +313,7 @@ function Index() {
         <section className="grid flex-1 content-start items-center gap-9 pb-9 pt-8 sm:pt-12 lg:grid-cols-[1.08fr_.92fr] lg:gap-12 lg:pb-14 lg:pt-14">
           <div className="sipl-enter">
             <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-sky-300/20 bg-sky-300/[.07] px-3.5 py-2 text-[10px] font-bold uppercase tracking-[.2em] text-sky-200">
-              <Sparkles size={13} />
+              
               Consulta patrimonial
             </div>
             <h1 className="max-w-[690px] font-display text-[clamp(2.5rem,5.3vw,4.8rem)] font-semibold leading-[.99] tracking-[-.065em] text-white">
@@ -323,7 +329,7 @@ function Index() {
             </div>
           </div>
 
-          <div className="sipl-visual-card relative mx-auto hidden w-full max-w-[440px] lg:block" aria-hidden="true">
+          <div className="hidden">
             <div className="sipl-orbit sipl-orbit-outer" />
             <div className="sipl-orbit sipl-orbit-inner" />
             <div className="sipl-float-chip sipl-float-chip-top"><Activity size={15} /><span>Sistema de consulta</span><span className="sipl-chip-dot" /></div>
@@ -353,7 +359,7 @@ function Index() {
                   <ArrowUpRight size={15} className="text-slate-500" />
                 </div>
               </div>
-              <div className="sipl-scan-line" />
+
             </div>
             <div className="sipl-float-chip sipl-float-chip-bottom"><span className="sipl-chip-dot" /><span>Interface pronta para consulta</span></div>
           </div>
@@ -413,14 +419,14 @@ function Index() {
 
           {relatorioUrl && (
             <>
-              {(carregandoFiltros || categoriasDisponiveis.length > 0 || erroFiltros) && (
+              {(carregandoFiltros || relatorioUrl || erroFiltros) && (
                 <div className="sipl-panel mb-4 rounded-[24px] p-4 sm:p-5">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-center gap-3">
                       <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-300/10 text-indigo-200"><Filter size={17} /></div>
-                      <div><div className="text-[12px] font-semibold text-white">Filtrar materiais</div><div className="mt-1 text-[10px] text-slate-500">{carregandoFiltros ? "Lendo o conteúdo do PDF..." : erroFiltros ? "O filtro automático não pôde ler este PDF." : "Categorias identificadas neste relatório."}</div></div>
+                      <div><div className="text-[12px] font-semibold text-white">Filtrar materiais</div><div className="mt-1 text-[10px] text-slate-500">{carregandoFiltros ? "Lendo o conteúdo do PDF..." : erroFiltros ? "O filtro automático não pôde ler este PDF." : "Selecione uma categoria para filtrar o texto extraído do PDF."}</div></div>
                     </div>
-                    {textoPdf && <span className="inline-flex items-center gap-1.5 self-start rounded-full border border-emerald-300/15 bg-emerald-300/[.06] px-3 py-1.5 text-[10px] font-semibold text-emerald-200 sm:self-auto"><CheckCircle2 size={12} /> {linhasFiltradas.length} linha(s)</span>}
+                    {textoPdf && <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto"><span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300/15 bg-emerald-300/[.06] px-3 py-1.5 text-[10px] font-semibold text-emerald-200"><CheckCircle2 size={12} /> {linhasFiltradas.length} linha(s)</span><button type="button" onClick={() => { const csv = ["Categoria;Conteúdo", ...linhasFiltradas.map((linha) => `${classificarLinhaMaterial(linha)};"${linha.replace(/"/g, '""')}"`)].join("\\r\\n"); const blob = new Blob(["\\uFEFF" + csv], { type: "text/csv;charset=utf-8;" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = "LCM-" + inicio + "-" + categoriaAtiva.toLowerCase().replace(/[^a-z0-9]+/g, "-") + ".csv"; a.click(); URL.revokeObjectURL(url); }} className="sipl-secondary-button inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-[10px] font-semibold"><Download size={13} /> Exportar CSV</button></div>}
                   </div>
                   {categoriasDisponiveis.length > 0 && <div className="mt-4 flex flex-wrap gap-2">{(["Todos", ...categoriasDisponiveis] as CategoriaMaterial[]).map((categoria) => <button key={categoria} type="button" onClick={() => setCategoriaAtiva(categoria)} className={"sipl-filter-chip inline-flex items-center gap-1.5 rounded-xl border px-3.5 py-2.5 text-[11px] font-semibold transition-all duration-200 " + (categoriaAtiva === categoria ? "sipl-filter-active" : "border-white/[.08] bg-white/[.025] text-slate-400 hover:border-sky-300/25 hover:bg-sky-300/[.05] hover:text-slate-200")}>{categoriaAtiva === categoria && <Check size={12} />}{categoria}</button>)}</div>}
                   {erroFiltros && <p className="mt-3 text-[11px] leading-5 text-amber-200/80">{erroFiltros}</p>}
