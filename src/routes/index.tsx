@@ -133,6 +133,7 @@ function Index() {
   const [inicio, setInicio] = useState("");
   const [indiceSugestao, setIndiceSugestao] = useState(0);
   const [relatorioUrl, setRelatorioUrl] = useState("");
+  const [relatorioSolicitado, setRelatorioSolicitado] = useState(false);
   const [erro, setErro] = useState("");
   const [carregando, setCarregando] = useState(false);
   const [confirmandoPdf, setConfirmandoPdf] = useState(false);
@@ -191,8 +192,10 @@ function Index() {
     }
 
     setCarregando(true);
+    setRelatorioSolicitado(true);
     setRelatorioUrl(url);
-    setTimeout(() => setCarregando(false), 400);
+    // Evita deixar o indicador preso caso o navegador não dispare onLoad para o PDF.
+    setTimeout(() => setCarregando(false), 20000);
   }
 
   function baixarPdfSipl() {
@@ -346,24 +349,18 @@ function Index() {
 
         {(tabelaErro || erro) && <div className="sipl-alert mt-4 flex items-start gap-3 rounded-2xl px-4 py-3.5 text-[12px] leading-5" role="alert"><CircleHelp size={17} className="mt-0.5 shrink-0" /><div>{tabelaErro && <p>{tabelaErro}</p>}{erro && <p>{erro}</p>}</div></div>}
 
-        <section className="mt-7 sm:mt-9">
+        {relatorioSolicitado && <section className="mt-7 sm:mt-9">
           <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <div className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[.2em] text-sky-200"><span className="h-1.5 w-1.5 rounded-full bg-sky-300" /> Etapa 02</div>
               <h2 className="font-display text-[23px] font-semibold tracking-[-.045em] text-white sm:text-[28px]">Relatório LCM</h2>
-              <p className="mt-1.5 max-w-[600px] text-[12px] leading-5 text-slate-500">{relatorioUrl ? <>Relatório solicitado para a OPM <strong className="font-mono font-semibold text-slate-300">{inicio}</strong>. O conteúdo é retornado diretamente pelo SIPL.</> : "O relatório aparecerá aqui depois que você confirmar a unidade."}</p>
+              <p className="mt-1.5 max-w-[600px] text-[12px] leading-5 text-slate-500">Relatório solicitado para a OPM <strong className="font-mono font-semibold text-slate-300">{inicio}</strong>. O conteúdo é retornado diretamente pelo sistema.</p>
             </div>
             <div className="flex flex-wrap gap-2">
               <button onClick={() => void baixarPdfSipl()} disabled={!relatorioUrl || carregando || baixandoPdf} className="sipl-secondary-button inline-flex h-[43px] items-center justify-center gap-2 rounded-xl px-4 text-[11px] font-bold transition-all disabled:cursor-not-allowed disabled:opacity-35">{baixandoPdf ? <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-slate-500/40 border-t-sky-200" /> : <ArrowDownToLine size={15} />} Baixar PDF</button>
               <button onClick={abrirRelatorio} disabled={!relatorioUrl || carregando} className="sipl-secondary-button inline-flex h-[43px] items-center justify-center gap-2 rounded-xl px-4 text-[11px] font-bold transition-all disabled:cursor-not-allowed disabled:opacity-35"><ExternalLink size={14} /> Abrir relatório</button>
             </div>
           </div>
-
-          {!relatorioUrl && <div className="sipl-empty-state flex min-h-[190px] flex-col items-center justify-center rounded-[26px] border border-dashed border-white/10 px-5 py-8 text-center">
-            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/[.08] bg-white/[.03] text-slate-500"><FileSearch size={22} strokeWidth={1.5} /></div>
-            <p className="text-[12px] font-semibold text-slate-300">Aguardando consulta</p>
-            <p className="mt-1.5 max-w-[320px] text-[11px] leading-5 text-slate-500">Confirme o código da OPM acima para abrir o relatório oficial do SIPL.</p>
-          </div>}
 
           {relatorioUrl && (
             <>
@@ -372,11 +369,14 @@ function Index() {
                   <div className="flex items-center gap-2.5"><span className="flex h-7 w-7 items-center justify-center rounded-lg bg-rose-300/10 text-rose-200"><FileSearch size={14} /></span><div><div className="text-[10px] font-semibold text-slate-200">Visualizador SIPL</div><div className="mt-0.5 text-[9px] text-slate-500">Documento original • OPM {inicio}</div></div></div>
                   <span className="rounded-full border border-white/[.08] px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[.12em] text-slate-500">PDF</span>
                 </div>
-                <iframe title={"Relatório LCM SIPL - " + inicio} src={relatorioUrl} className="h-[75vh] min-h-[560px] w-full border-0 bg-white sm:min-h-[680px]" />
+                <div className="relative">
+                  {carregando && <div className="absolute inset-0 z-10 flex min-h-[560px] flex-col items-center justify-center gap-4 bg-[#0b1320] px-5 text-center sm:min-h-[680px]" role="status" aria-live="polite"><span className="h-10 w-10 animate-spin rounded-full border-[3px] border-sky-200/20 border-t-sky-200" /><p className="text-sm font-semibold text-white">Carregando relatório...</p><p className="max-w-sm text-xs leading-5 text-slate-400">Estamos aguardando o documento do sistema. Isso pode levar alguns segundos; mantenha esta página aberta.</p></div>}
+                  <iframe title={"Relatório LCM SIPL - " + inicio} src={relatorioUrl} onLoad={() => setCarregando(false)} className="h-[75vh] min-h-[560px] w-full border-0 bg-white sm:min-h-[680px]" />
+                </div>
               </div>
             </>
           )}
-        </section>
+        </section>}
 
         <aside className="sipl-network-note mt-7 flex items-start gap-3.5 rounded-2xl px-4 py-4 sm:px-5">
           <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-amber-300/10 text-amber-200"><LockKeyhole size={16} /></div>
