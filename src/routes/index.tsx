@@ -1,9 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { getDocument, GlobalWorkerOptions } from "pdfjs-dist";
 import pdfWorker from "pdfjs-dist/build/pdf.worker.mjs?url";
-
-GlobalWorkerOptions.workerSrc = pdfWorker;
 
 export const Route = createFileRoute("/")({
   head: () => ({ meta: [{ title: "Consulta LCM | SIPL" }] }),
@@ -150,6 +147,8 @@ function classificarLinhaMaterial(linha: string): CategoriaMaterial {
 
 async function extrairTextoPdf(blob: Blob) {
   const data = new Uint8Array(await blob.arrayBuffer());
+  const { getDocument, GlobalWorkerOptions } = await import("pdfjs-dist");
+  GlobalWorkerOptions.workerSrc = pdfWorker;
   const pdf = await getDocument({ data }).promise;
   const paginas: string[] = [];
   for (let pagina = 1; pagina <= pdf.numPages; pagina += 1) {
