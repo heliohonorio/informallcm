@@ -428,7 +428,7 @@ function Index() {
               <div className="mb-4 flex items-start justify-between gap-4">
                 <div>
                   <h3 className="font-display text-[21px] font-semibold tracking-[-.04em] text-white">Como baixar o PDF</h3>
-                  <p className="mt-1.5 text-[12px] leading-5 text-slate-400">No relatório aberto, clique na seta de download da barra de ferramentas.</p>
+                  <p className="mt-1.5 text-[12px] leading-5 text-slate-400">Clique na seta de download da barra de ferramentas.</p>
                 </div>
                 <button onClick={() => setTutorialPdfAberto(false)} aria-label="Fechar tutorial" className="rounded-xl p-2 text-slate-500 transition hover:bg-white/[.06] hover:text-white"><X size={17} /></button>
               </div>
