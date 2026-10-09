@@ -34,12 +34,29 @@ jobs:
 
       - name: Prepare static output
         run: |
-          if [ ! -f .output/public/index.html ] && [ -f .output/public/_shell.html ]; then
-            cp .output/public/_shell.html .output/public/index.html
+          if [ -d .output/public ]; then
+            SITE_DIR=".output/public"
+          elif [ -d dist/client ]; then
+            SITE_DIR="dist/client"
+          else
+            echo "Não foi encontrada a pasta de saída estática do build."
+            find . -maxdepth 3 -type f -name 'index.html' -print
+            exit 1
           fi
-          test -f .output/public/index.html
-          cp .output/public/index.html .output/public/404.html
-          touch .output/public/.nojekyll
+
+          if [ ! -f "$SITE_DIR/index.html" ] && [ -f "$SITE_DIR/_shell.html" ]; then
+            cp "$SITE_DIR/_shell.html" "$SITE_DIR/index.html"
+          fi
+
+          if [ ! -f "$SITE_DIR/index.html" ]; then
+            echo "index.html não foi gerado em $SITE_DIR."
+            find "$SITE_DIR" -maxdepth 3 -type f -print
+            exit 1
+          fi
+
+          cp "$SITE_DIR/index.html" "$SITE_DIR/404.html"
+          touch "$SITE_DIR/.nojekyll"
+          echo "SITE_DIR=$SITE_DIR" >> "$GITHUB_ENV"
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
@@ -47,7 +64,7 @@ jobs:
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .output/public
+          path: ${{ env.SITE_DIR }}
 
   deploy:
     environment:
