@@ -277,7 +277,7 @@ function Index() {
               Encontre os patrimônios <span className="sipl-title-glow">da sua OPM.</span>
             </h1>
             <p className="mt-3 max-w-[550px] text-[14px] leading-6 text-slate-400 sm:text-[15px]">
-              Consulte o relatório LCM diretamente no SIPL. Identifique a unidade, abra o documento e encontre os materiais com uma interface mais simples e objetiva.
+              Consulte o relatório LCM. Identifique a unidade, abra o documento e encontre os materiais com uma interface mais simples e objetiva.
             </p>
             <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-[10px] font-medium text-slate-400">
               <span className="inline-flex items-center gap-2"><CheckCircle2 size={15} className="text-emerald-300" /> Código exato da unidade</span>
