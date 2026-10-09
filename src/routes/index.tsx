@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import pdfWorker from "pdfjs-dist/build/pdf.worker.mjs?url";
 import { Activity, ArrowDownToLine, ArrowUpRight, Check, CheckCircle2, ChevronRight, CircleHelp, Database, ExternalLink, FileSearch, Filter, Fingerprint, LockKeyhole, Search, ShieldCheck, Download, X } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -127,49 +126,6 @@ async function carregarTabelaOpm(): Promise<OpmRecord[]> {
   return ativos;
 }
 
-type CategoriaMaterial = "Todos" | "Colete" | "EPI" | "Informática" | "Telecomunicação" | "Munição" | "Viatura" | "Arma" | "Lote" | "Diversos";
-
-const CATEGORIAS: Array<{ nome: CategoriaMaterial; termos: string[] }> = [
-  { nome: "Colete", termos: ["colete", "balistico", "balística"] },
-  { nome: "EPI", termos: ["epi", "capacete", "algema", "luva", "oculos", "óculos", "coturno", "equipamento de protecao", "equipamento de proteção"] },
-  { nome: "Informática", termos: ["informatica", "informática", "computador", "monitor", "impressora", "notebook", "teclado", "mouse", "microcomputador", "access point", "switch", "no break", "nobreak", "roteador", "servidor", "scanner", "tablet", "projetor", "estabilizador"] },
-  { nome: "Telecomunicação", termos: ["telecom", "radio", "rádio", "comunicacao", "comunicação", "telefone", "transceptor", "motorola", "apx", "uhf", "vhf", "antena", "repetidora", "hdt"] },
-  { nome: "Munição", termos: ["municao", "munição", "cartucho", "projetil", "projétil"] },
-  { nome: "Viatura", termos: ["viatura", "veiculo", "veículo", "automovel", "automóvel", "motocicleta", "caminhonete", "onibus", "ônibus"] },
-  { nome: "Arma", termos: ["arma", "pistola", "fuzil", "carabina", "revolver", "revólver"] },
-  { nome: "Lote", termos: ["lote"] },
-  { nome: "Diversos", termos: ["diverso", "diversos"] },
-];
-
-function classificarLinhaMaterial(linha: string): CategoriaMaterial {
-  const normalizada = linha.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-  return CATEGORIAS.find((categoria) => categoria.nome !== "Diversos" && categoria.termos.some((termo) => normalizada.includes(termo.normalize("NFD").replace(/[\u0300-\u036f]/g, ""))))?.nome ?? "Diversos";
-}
-
-async function extrairTextoPdf(blob: Blob) {
-  const data = new Uint8Array(await blob.arrayBuffer());
-  const { getDocument, GlobalWorkerOptions } = await import("pdfjs-dist");
-  GlobalWorkerOptions.workerSrc = pdfWorker;
-  const pdf = await getDocument({ data }).promise;
-  const paginas: string[] = [];
-  for (let pagina = 1; pagina <= pdf.numPages; pagina += 1) {
-    const page = await pdf.getPage(pagina);
-    const content = await page.getTextContent();
-    const linhas: Array<{ y: number; x: number; texto: string }> = [];
-    for (const item of content.items) {
-      if (!("str" in item) || !item.str.trim()) continue;
-      const transform = "transform" in item ? item.transform : undefined;
-      const x = Array.isArray(transform) ? Number(transform[4]) : 0;
-      const y = Array.isArray(transform) ? Number(transform[5]) : 0;
-      let linha = linhas.find((entry) => Math.abs(entry.y - y) < 3);
-      if (!linha) { linha = { y, x, texto: "" }; linhas.push(linha); }
-      linha.texto += (linha.texto ? " " : "") + item.str.trim();
-      linha.x = Math.min(linha.x, x);
-    }
-    paginas.push(linhas.sort((a, b) => b.y - a.y || a.x - b.x).map((linha) => linha.texto).join("\n"));
-  }
-  return paginas.join("\n");
-}
 
 function Index() {
   const [opms, setOpms] = useState<OpmRecord[]>([]);
@@ -180,10 +136,6 @@ function Index() {
   const [carregando, setCarregando] = useState(false);
   const [confirmandoPdf, setConfirmandoPdf] = useState(false);
   const [baixandoPdf, setBaixandoPdf] = useState(false);
-  const [textoPdf, setTextoPdf] = useState("");
-  const [categoriaAtiva, setCategoriaAtiva] = useState<CategoriaMaterial>("Todos");
-  const [carregandoFiltros, setCarregandoFiltros] = useState(false);
-  const [erroFiltros, setErroFiltros] = useState("");
   const codigoOpm = inicio.length === 9 ? inicio : "";
   const opmSelecionada = useMemo(() => inicio.length === 9 ? opms.find((opm) => opm.codigo === codigoOpm) : undefined, [opms, codigoOpm]);
   const sugestoes = useMemo(() => inicio ? opms.filter((opm) => opm.codigo.startsWith(inicio)).slice(0, 8) : [], [opms, inicio]);
@@ -192,36 +144,6 @@ function Index() {
     void carregarTabelaOpm().then(setOpms).catch((error) => setTabelaErro(error instanceof Error ? error.message : "Erro ao carregar a Tabela OPM."));
   }, []);
 
-  useEffect(() => {
-    if (!relatorioUrl) return;
-    let cancelado = false;
-    setCarregandoFiltros(true);
-    setErroFiltros("");
-    setTextoPdf("");
-    void fetch(relatorioUrl, { mode: "cors", credentials: "include" })
-      .then((response) => {
-        if (!response.ok) throw new Error("HTTP " + response.status);
-        return response.blob();
-      })
-      .then(extrairTextoPdf)
-      .then((texto) => {
-        if (!cancelado) setTextoPdf(texto);
-      })
-      .catch(() => {
-        if (!cancelado) setErroFiltros("O SIPL não permite a leitura automática do PDF. Clique em \"Baixar PDF\" e depois em \"Carregar o PDF baixado para filtrar\".");
-      })
-      .finally(() => {
-        if (!cancelado) setCarregandoFiltros(false);
-      });
-    return () => { cancelado = true; };
-  }, [relatorioUrl]);
-
-  const linhasPdf = useMemo(() => textoPdf.split(/\n+/).map((linha) => linha.trim()).filter(Boolean), [textoPdf]);
-  const categoriasDisponiveis = useMemo(() => CATEGORIAS.map((categoria) => categoria.nome), []);
-  const linhasFiltradas = useMemo(
-    () => categoriaAtiva === "Todos" ? linhasPdf : linhasPdf.filter((linha) => classificarLinhaMaterial(linha) === categoriaAtiva),
-    [linhasPdf, categoriaAtiva],
-  );
 
   function handleConsultar() {
     setErro("");
@@ -273,11 +195,13 @@ function Index() {
       anchor.remove();
       setTimeout(() => URL.revokeObjectURL(url), 5000);
     } catch {
-      // O SIPL está em outro domínio da rede interna e pode bloquear a
-      // leitura direta pelo navegador. Nesse caso, abrimos o relatório
-      // para que o usuário salve o PDF por lá.
-      setErro("O navegador bloqueou o download direto do SIPL. O relatório foi aberto em uma nova aba — salve o PDF por ela.");
-      window.open(relatorioUrl, "_blank", "noopener,noreferrer");
+      // Fallback: link de download direto (sem nova aba).
+      const anchor = document.createElement("a");
+      anchor.href = relatorioUrl;
+      anchor.download = "Consulta-LCM-" + inicio + ".pdf";
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
     } finally {
       setBaixandoPdf(false);
     }
@@ -352,12 +276,6 @@ function Index() {
                   <div className="flex-1"><div className="text-[11px] font-semibold text-slate-200">Consultar no SIPL</div><div className="mt-1 text-[10px] text-slate-500">Relatório da rede interna</div></div>
                   <ArrowUpRight size={15} className="text-slate-500" />
                 </div>
-                <div className="sipl-card-rule" />
-                <div className="flex items-center gap-3">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-300/10 text-emerald-200"><Filter size={16} /></span>
-                  <div className="flex-1"><div className="text-[11px] font-semibold text-slate-200">Filtrar materiais</div><div className="mt-1 text-[10px] text-slate-500">Visualização por categoria</div></div>
-                  <ArrowUpRight size={15} className="text-slate-500" />
-                </div>
               </div>
 
             </div>
@@ -419,20 +337,6 @@ function Index() {
 
           {relatorioUrl && (
             <>
-              {(carregandoFiltros || relatorioUrl || erroFiltros) && (
-                <div className="sipl-panel mb-4 rounded-[24px] p-4 sm:p-5">
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-300/10 text-indigo-200"><Filter size={17} /></div>
-                      <div><div className="text-[12px] font-semibold text-white">Filtrar materiais</div><div className="mt-1 text-[10px] text-slate-500">{carregandoFiltros ? "Lendo o conteúdo do PDF..." : erroFiltros ? "O filtro automático não pôde ler este PDF." : "Selecione uma categoria para filtrar o texto extraído do PDF."}</div></div>
-                    </div>
-                    {textoPdf && <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto"><span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300/15 bg-emerald-300/[.06] px-3 py-1.5 text-[10px] font-semibold text-emerald-200"><CheckCircle2 size={12} /> {linhasFiltradas.length} linha(s)</span><button type="button" onClick={() => { const csv = ["Categoria;Conteúdo", ...linhasFiltradas.map((linha) => `${classificarLinhaMaterial(linha)};"${linha.replace(/"/g, '""')}"`)].join("\\r\\n"); const blob = new Blob(["\\uFEFF" + csv], { type: "text/csv;charset=utf-8;" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = "LCM-" + inicio + "-" + categoriaAtiva.toLowerCase().replace(/[^a-z0-9]+/g, "-") + ".csv"; a.click(); URL.revokeObjectURL(url); }} className="sipl-secondary-button inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-[10px] font-semibold"><Download size={13} /> Exportar CSV</button></div>}
-                  </div>
-                  {categoriasDisponiveis.length > 0 && <div className="mt-4 flex flex-wrap gap-2">{(["Todos", ...categoriasDisponiveis] as CategoriaMaterial[]).map((categoria) => <button key={categoria} type="button" onClick={() => setCategoriaAtiva(categoria)} className={"sipl-filter-chip inline-flex items-center gap-1.5 rounded-xl border px-3.5 py-2.5 text-[11px] font-semibold transition-all duration-200 " + (categoriaAtiva === categoria ? "sipl-filter-active" : "border-white/[.08] bg-white/[.025] text-slate-400 hover:border-sky-300/25 hover:bg-sky-300/[.05] hover:text-slate-200")}>{categoriaAtiva === categoria && <Check size={12} />}{categoria}</button>)}</div>}
-                  {erroFiltros && <p className="mt-3 text-[11px] leading-5 text-amber-200/80">{erroFiltros}</p>}
-                  {!carregandoFiltros && <label className="sipl-secondary-button mt-3 inline-flex cursor-pointer items-center gap-1.5 rounded-xl px-3 py-2 text-[11px] font-semibold"><ArrowDownToLine size={13} /> {textoPdf ? "Carregar outro PDF" : "Carregar o PDF baixado para filtrar"}<input type="file" accept="application/pdf,.pdf" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; event.target.value = ""; if (!file) return; setCarregandoFiltros(true); setErroFiltros(""); void extrairTextoPdf(file).then((texto) => { setTextoPdf(texto); setCategoriaAtiva("Todos"); }).catch(() => setErroFiltros("Não foi possível ler este arquivo PDF.")).finally(() => setCarregandoFiltros(false)); }} /></label>}
-                  {textoPdf && <div className="sipl-pdf-text mt-4 max-h-[360px] overflow-auto rounded-2xl border border-white/[.07] bg-[#080e18]/75 p-3">{linhasFiltradas.length > 0 ? <div className="space-y-0.5">{linhasFiltradas.map((linha, index) => <div key={index} className="border-b border-white/[.045] px-2.5 py-2 font-mono text-[10px] leading-5 text-slate-300 last:border-0">{linha}</div>)}</div> : <div className="px-2 py-8 text-center text-[11px] text-slate-500">Nenhum item encontrado nesta categoria.</div>}</div>}
-                </div>
               )}
               <div className="sipl-pdf-frame overflow-hidden rounded-[24px] border border-white/[.12] bg-[#111827]">
                 <div className="flex items-center justify-between gap-3 border-b border-white/[.08] bg-white/[.025] px-4 py-3">
