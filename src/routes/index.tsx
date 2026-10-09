@@ -133,6 +133,7 @@ function Index() {
   const [inicio, setInicio] = useState("");
   const [indiceSugestao, setIndiceSugestao] = useState(0);
   const sugestoesRef = useRef<HTMLDivElement>(null);
+  const relatorioRef = useRef<HTMLElement>(null);
   const [relatorioUrl, setRelatorioUrl] = useState("");
   const [relatorioSolicitado, setRelatorioSolicitado] = useState(false);
   const [erro, setErro] = useState("");
@@ -152,6 +153,16 @@ function Index() {
       lista.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
   }, [sugestoes.length, inicio]);
+
+  useEffect(() => {
+    if (!relatorioSolicitado || !relatorioUrl) return;
+    // Leva o usuário diretamente ao relatório após confirmar a OPM com Enter ou pelo botão.
+    const quadro = relatorioRef.current;
+    if (!quadro) return;
+    requestAnimationFrame(() => {
+      quadro.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }, [relatorioSolicitado, relatorioUrl]);
 
   useEffect(() => {
     void carregarTabelaOpm().then(setOpms).catch((error) => setTabelaErro(error instanceof Error ? error.message : "Erro ao carregar a Tabela OPM."));
@@ -359,7 +370,7 @@ function Index() {
 
         {(tabelaErro || erro) && <div className="sipl-alert mt-4 flex items-start gap-3 rounded-2xl px-4 py-3.5 text-[12px] leading-5" role="alert"><CircleHelp size={17} className="mt-0.5 shrink-0" /><div>{tabelaErro && <p>{tabelaErro}</p>}{erro && <p>{erro}</p>}</div></div>}
 
-        {relatorioSolicitado && <section className="mt-7 sm:mt-9">
+        {relatorioSolicitado && <section ref={relatorioRef} className="mt-7 scroll-mt-5 sm:mt-9">
           <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <div className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[.2em] text-sky-200"><span className="h-1.5 w-1.5 rounded-full bg-sky-300" /> Etapa 02</div>
