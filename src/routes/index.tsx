@@ -398,7 +398,7 @@ function Index() {
         <footer className="mt-5 border-t border-white/[.05] py-3">
           <div className="flex w-full flex-col items-center justify-between gap-4 text-center sm:flex-row sm:gap-5 sm:text-left">
             <div className="flex shrink-0 items-center gap-2 text-[10px] font-semibold tracking-[.05em] text-[#334155]"><ShieldCheck size={14} className="text-[#334155]" /> SIPL <span className="text-[#334155]">/</span> Consulta LCM</div>
-            <div className="flex flex-col items-center gap-1 text-[10px] text-[#334155] sm:items-end">
+            <div className="flex flex-col items-center gap-1 text-[10px] text-[#334155] sm:items-start">
               <div>Criado por: Sd PM Filho</div>
               <div>Diretoria de Logística • Setor de Auditoria e Sistemas</div>
             </div>
