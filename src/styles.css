@@ -434,8 +434,8 @@ display: none !important;
 .sipl-input-wrap { min-width: 0; }
 @media (min-width: 1024px) {
   .sipl-app > div.relative.z-10 { max-width: 1180px; }
-  .sipl-app section.grid.flex-1 { grid-template-columns: minmax(0, 1fr); padding-top: 2.5rem; padding-bottom: 2rem; }
-  .sipl-app section.grid.flex-1 h1 { max-width: 850px; font-size: clamp(2.5rem, 4.5vw, 4rem); }
+  .sipl-app section.grid { grid-template-columns: minmax(0, 1fr); padding-top: 2.5rem; padding-bottom: 2rem; }
+  .sipl-app section.grid h1 { max-width: 850px; font-size: clamp(2.5rem, 4.5vw, 4rem); }
 }
 @media (max-width: 767px) {
   .sipl-app section.sipl-panel { padding: 1rem; border-radius: 1.25rem; }
@@ -483,12 +483,12 @@ display: none !important;
     padding-top: .65rem;
     padding-bottom: .65rem;
   }
-  .sipl-app section.grid.flex-1 {
+  .sipl-app section.grid {
     padding-top: .75rem;
     padding-bottom: .75rem;
     gap: 1rem;
   }
-  .sipl-app section.grid.flex-1 h1 {
+  .sipl-app section.grid h1 {
     font-size: clamp(2.1rem, 3.5vw, 3.2rem);
     line-height: 1;
   }
