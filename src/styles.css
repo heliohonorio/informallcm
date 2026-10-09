@@ -471,3 +471,36 @@ display: none !important;
 .sipl-app footer [class~="text-slate-600"] { color: #475569 !important; }
 .sipl-app footer [class~="text-slate-700"] { color: #334155 !important; }
 .sipl-app footer [class~="text-slate-400"] { color: #94a3b8 !important; }
+
+
+/* Página inicial compacta em telas de computador: prioriza caber sem rolagem */
+@media (min-width: 768px) and (min-height: 700px) {
+  .sipl-app > div.relative.z-10 {
+    min-height: 100svh;
+    padding-bottom: .75rem;
+  }
+  .sipl-app .sipl-topbar {
+    padding-top: .65rem;
+    padding-bottom: .65rem;
+  }
+  .sipl-app section.grid.flex-1 {
+    padding-top: .75rem;
+    padding-bottom: .75rem;
+    gap: 1rem;
+  }
+  .sipl-app section.grid.flex-1 h1 {
+    font-size: clamp(2.1rem, 3.5vw, 3.2rem);
+    line-height: 1;
+  }
+  .sipl-app section.sipl-panel {
+    padding: 1rem;
+  }
+  .sipl-app .sipl-network-note {
+    margin-top: .75rem;
+  }
+  .sipl-app footer {
+    margin-top: .75rem;
+    padding-top: .5rem;
+    padding-bottom: .5rem;
+  }
+}
