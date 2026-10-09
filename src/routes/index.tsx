@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import pdfWorker from "pdfjs-dist/build/pdf.worker.mjs?url";
+import { Activity, ArrowDownToLine, ArrowUpRight, Check, CheckCircle2, ChevronRight, CircleHelp, Database, ExternalLink, FileSearch, Filter, Fingerprint, LockKeyhole, Search, ShieldCheck, Sparkles, X } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({ meta: [{ title: "Consulta LCM | SIPL" }] }),
@@ -281,129 +282,183 @@ function Index() {
     window.open(relatorioUrl, "_blank", "noopener,noreferrer");
   }
   return (
-    <main className="min-h-screen bg-[#202124] text-[#e8eaed]">
-      <div className="mx-auto flex min-h-screen w-full max-w-[1120px] flex-col px-5 sm:px-8">
-        <header className="flex h-[72px] items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#8ab4f8] text-[#202124]">
-              <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M5 4.5h14v15H5z" /><path d="M8 8h8M8 12h8M8 16h5" /></svg>
+    <main className="sipl-app relative min-h-screen overflow-hidden text-slate-100">
+      <div className="sipl-ambient sipl-ambient-a" aria-hidden="true" />
+      <div className="sipl-ambient sipl-ambient-b" aria-hidden="true" />
+      <div className="sipl-grid-overlay" aria-hidden="true" />
+      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-[1240px] flex-col px-4 pb-6 sm:px-7 lg:px-10">
+        <header className="sipl-topbar flex items-center justify-between gap-4 py-5 sm:py-6">
+          <a href="#" className="group flex items-center gap-3" aria-label="SIPL Consulta LCM - início">
+            <div className="sipl-brand-mark flex h-11 w-11 items-center justify-center rounded-2xl text-white shadow-lg shadow-sky-950/30 transition-transform duration-300 group-hover:-rotate-3 group-hover:scale-105">
+              <ShieldCheck size={23} strokeWidth={1.7} />
             </div>
-            <div className="leading-none"><div className="text-[15px] font-medium tracking-tight text-[#e8eaed]">SIPL</div><div className="mt-1 text-[11px] text-[#9aa0a6]">Consulta LCM</div></div>
+            <div>
+              <div className="font-display text-[17px] font-bold leading-none tracking-[-.04em] text-white">SIPL<span className="text-sky-300">.</span></div>
+              <div className="mt-1.5 text-[10px] font-semibold uppercase tracking-[.2em] text-slate-400">Consulta LCM</div>
+            </div>
+          </a>
+          <div className="flex items-center gap-2 rounded-full border border-white/10 bg-slate-900/55 px-3 py-2 backdrop-blur-xl sm:px-4">
+            <span className="sipl-status-pulse h-2 w-2 rounded-full bg-emerald-400" />
+            <span className="hidden text-[10px] font-bold uppercase tracking-[.16em] text-slate-300 sm:inline">Acesso à intranet</span>
+            <span className="text-[10px] font-bold uppercase tracking-[.16em] text-slate-300 sm:hidden">Intranet</span>
           </div>
-          <div className="hidden text-xs text-[#9aa0a6] sm:block">Consulta de patrimônio pelo SIPL</div>
         </header>
 
-        <div className="flex flex-1 flex-col items-center pt-[9vh] sm:pt-[12vh]">
-          <div className="w-full max-w-[760px] text-center">
-            <div className="mb-5 inline-flex items-center rounded-full border border-[#3c4043] bg-[#2b2c2f] px-3 py-1 text-[11px] font-medium tracking-wide text-[#9aa0a6]">CONSULTA LCM</div>
-            <h1 className="text-[32px] font-normal tracking-[-0.7px] text-[#e8eaed] sm:text-[42px]">Encontre os patrimônios da OPM</h1>
-            <p className="mx-auto mt-4 max-w-[590px] text-[15px] leading-6 text-[#9aa0a6]">Informe o código da unidade e faça a consulta. O relatório é consultado diretamente no SIPL pela rede interna.</p>
-
-            <div className="mt-9 rounded-[28px] border border-[#3c4043] bg-[#2b2c2f] p-3 shadow-[0_2px_8px_rgba(0,0,0,.35)] sm:p-4">
-              <div className="grid gap-3 md:grid-cols-[1fr_auto]">
-                <label className="text-left">
-                  <span className="mb-1.5 ml-3 block text-[12px] font-medium text-[#9aa0a6]">Código da unidade</span>
-                  <div className="relative">
-                    <input value={inicio} onChange={(event) => { const value = event.target.value.replace(/\D/g, "").slice(0, 9); setInicio(value); setErro(""); }} onKeyDown={(event) => { if (event.key === "Enter") void handleConsultar(); }} inputMode="numeric" maxLength={9} placeholder="201008220" aria-label="Código exato da OPM" className="h-[54px] w-full rounded-[16px] border border-[#3c4043] bg-[#202124] px-4 pr-12 font-mono text-[16px] font-medium tracking-[.04em] text-[#e8eaed] outline-none transition placeholder:text-[#80868b] hover:border-[#5f6368] focus:border-[#8ab4f8] focus:bg-[#202124] focus:ring-4 focus:ring-[#8ab4f8]/15" />
-                    <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[11px] text-[#80868b]">{inicio.length}/9</span>
-                  </div>
-                  {inicio.length === 9 && <div className={"mt-2.5 rounded-[14px] px-3.5 py-2.5 text-left text-[12px] " + (opmSelecionada ? "bg-[#2d3f31] text-[#81c995]" : "bg-[#3d3223] text-[#fdd663]")}>{opmSelecionada ? <span><strong className="font-semibold">{opmSelecionada.codigo}</strong><span className="mx-1.5 opacity-50">•</span>{opmSelecionada.nome}</span> : "Código não localizado entre as unidades ativas."}</div>}
-                </label>
-
-
-
-                <button onClick={() => void handleConsultar()} disabled={carregando} className="h-[54px] rounded-[16px] bg-[#8ab4f8] px-6 text-[14px] font-medium text-[#202124] transition hover:bg-[#a8c7fa] active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-50 md:mt-[22px]">{carregando ? <span className="inline-flex items-center gap-2"><span className="h-4 w-4 animate-spin rounded-full border-2 border-[#202124]/30 border-t-[#202124]" />Consultando</span> : "Confirmar unidade e consultar"}</button>
-              </div>
-
-              {sugestoes.length > 0 && inicio.length < 5 && <div className="mt-2 overflow-hidden rounded-[16px] border border-[#3c4043] bg-[#2b2c2f] text-left shadow-[0_4px_12px_rgba(0,0,0,.4)]"><div className="px-4 py-2.5 text-[11px] font-medium uppercase tracking-wide text-[#9aa0a6]">Unidades encontradas</div>{sugestoes.map((opm) => <button key={opm.codigo} type="button" onClick={() => { setInicio(opm.codigo); }} className="flex w-full items-center justify-between border-t border-[#3c4043] px-4 py-3 text-left hover:bg-[#303134]"><span className="font-mono text-[13px] font-medium text-[#e8eaed]">{opm.codigo}</span><span className="ml-4 truncate text-[13px] text-[#9aa0a6]">{opm.nome}</span></button>)}</div>}
-              <div className="mt-3 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 px-2 text-[11px] text-[#80868b]"><span>O código informado será usado exatamente como digitado no SIPL.</span><span className="hidden sm:inline">•</span><span>Digite os 9 dígitos exatos da unidade.</span></div>
+        <section className="grid flex-1 content-start items-center gap-9 pb-9 pt-8 sm:pt-12 lg:grid-cols-[1.08fr_.92fr] lg:gap-12 lg:pb-14 lg:pt-14">
+          <div className="sipl-enter">
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-sky-300/20 bg-sky-300/[.07] px-3.5 py-2 text-[10px] font-bold uppercase tracking-[.2em] text-sky-200">
+              <Sparkles size={13} />
+              Consulta patrimonial
             </div>
-
-            {tabelaErro && <div className="mx-auto mt-4 max-w-[760px] rounded-[14px] border border-[#5c2b28] bg-[#3b1f1e] px-4 py-3 text-left text-[13px] text-[#f28b82]">{tabelaErro}</div>}
-            {erro && <div className="mx-auto mt-4 max-w-[760px] rounded-[14px] border border-[#5c2b28] bg-[#3b1f1e] px-4 py-3 text-left text-[13px] text-[#f28b82]">{erro}</div>}
-
-            <div className="mt-10 border-t border-[#3c4043] pt-8 text-left">
-              <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <div className="flex items-center gap-2.5">
-                    <span className={"flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-semibold " + (relatorioUrl ? "bg-[#2d3f31] text-[#81c995]" : "bg-[#303134] text-[#9aa0a6]")}>{relatorioUrl ? "✓" : "2"}</span>
-                    <h2 className="text-[15px] font-medium text-[#e8eaed]">Relatório LCM do SIPL</h2>
-                  </div>
-                  <p className="mt-2 pl-[38px] text-[12px] text-[#9aa0a6]">{relatorioUrl ? <>Relatório carregado para a OPM <strong className="font-medium text-[#e8eaed]">{inicio}</strong>. O conteúdo abaixo é retornado diretamente pelo SIPL.</> : "Após a consulta, o relatório do SIPL aparecerá aqui."}</p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <button onClick={() => void baixarPdfSipl()} disabled={!relatorioUrl || carregando || baixandoPdf} className="inline-flex h-[44px] items-center justify-center gap-2 rounded-[13px] bg-[#8ab4f8] px-5 text-[13px] font-medium text-[#202124] transition hover:bg-[#a8c7fa] active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-50">{baixandoPdf ? <span className="inline-flex items-center gap-2"><span className="h-4 w-4 animate-spin rounded-full border-2 border-[#202124]/30 border-t-[#202124]" />Baixando</span> : "Baixar PDF"}</button>
-                  <button onClick={abrirRelatorio} disabled={!relatorioUrl || carregando} className="inline-flex h-[44px] items-center justify-center gap-2 rounded-[13px] border border-[#3c4043] bg-[#2b2c2f] px-5 text-[13px] font-medium text-[#e8eaed] transition hover:bg-[#303134] hover:border-[#5f6368] active:scale-[.98] disabled:cursor-not-allowed disabled:bg-[#2b2c2f] disabled:text-[#80868b]">Abrir relatório</button>
-                </div>
-              </div>
-              {relatorioUrl && (
-                <>
-                  {(carregandoFiltros || categoriasDisponiveis.length > 0 || erroFiltros) && (
-                    <div className="mt-5 rounded-[18px] border border-[#3c4043] bg-[#2b2c2f] p-4 text-left">
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div>
-                          <div className="text-[13px] font-medium text-[#e8eaed]">Filtrar materiais</div>
-                          <div className="mt-1 text-[11px] text-[#9aa0a6]">
-                            {carregandoFiltros ? "Lendo o conteúdo do PDF..." : erroFiltros ? "O filtro automático não pôde ler este PDF." : "Categorias encontradas neste relatório."}
-                          </div>
-                        </div>
-                        {textoPdf && <span className="text-[11px] text-[#81c995]">{linhasFiltradas.length} linha(s)</span>}
-                      </div>
-                      {categoriasDisponiveis.length > 0 && (
-                        <div className="mt-4 flex flex-wrap gap-2">
-                          {(["Todos", ...categoriasDisponiveis] as CategoriaMaterial[]).map((categoria) => (
-                            <button key={categoria} type="button" onClick={() => setCategoriaAtiva(categoria)} className={"rounded-[11px] border px-3.5 py-2 text-[12px] font-medium transition active:scale-[.98] " + (categoriaAtiva === categoria ? "border-[#8ab4f8] bg-[#8ab4f8] text-[#202124]" : "border-[#3c4043] bg-[#202124] text-[#e8eaed] hover:bg-[#303134]")}>
-                              {categoria}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                      {textoPdf && (
-                        <div className="mt-4 max-h-[360px] overflow-auto rounded-[14px] border border-[#3c4043] bg-[#202124] p-3">
-                          {linhasFiltradas.length > 0 ? (
-                            <div className="space-y-1">
-                              {linhasFiltradas.map((linha, index) => <div key={index} className="border-b border-[#303134] px-2 py-2 font-mono text-[11px] leading-5 text-[#d9dce1] last:border-0">{linha}</div>)}
-                            </div>
-                          ) : (
-                            <div className="px-2 py-5 text-center text-[12px] text-[#9aa0a6]">Nenhum item encontrado nesta categoria.</div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  <div className="mt-5 overflow-hidden rounded-[18px] border border-[#3c4043] bg-[#303134] shadow-[0_2px_8px_rgba(0,0,0,.35)]">
-                    <iframe title={"Relatório LCM SIPL - " + inicio} src={relatorioUrl} className="h-[75vh] min-h-[680px] w-full border-0 bg-[#202124]" />
-                  </div>
-                </>
-              )}
-            </div>
-
-            <div className="mx-auto mt-8 max-w-[760px] rounded-[16px] border border-[#5f4b1f] bg-[#2f2a1c] px-4 py-3.5 text-left">
-              <div className="flex items-start gap-3">
-                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#fdd663] text-[13px] font-bold text-[#2f2a1c]" aria-hidden="true">!</span>
-                <div>
-                  <p className="text-[13px] font-medium leading-5 text-[#fdd663]">Este sistema só funciona nas máquinas conectadas ao CMDO / INTRANET.</p>
-                  <p className="mt-1.5 text-[12px] leading-5 text-[#c9b98a]">Fora dessa rede o relatório do SIPL não carrega e o download do PDF não é concluído. Use um computador da rede interna da PM.</p>
-                </div>
-              </div>
+            <h1 className="max-w-[690px] font-display text-[clamp(2.5rem,5.3vw,4.8rem)] font-semibold leading-[.99] tracking-[-.065em] text-white">
+              Encontre os patrimônios <span className="sipl-title-glow">da sua OPM.</span>
+            </h1>
+            <p className="mt-6 max-w-[550px] text-[15px] leading-7 text-slate-400 sm:text-[16px]">
+              Consulte o relatório LCM diretamente no SIPL. Identifique a unidade, abra o documento e encontre os materiais com uma interface mais simples e objetiva.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-x-5 gap-y-3 text-[11px] font-medium text-slate-400">
+              <span className="inline-flex items-center gap-2"><CheckCircle2 size={15} className="text-emerald-300" /> Código exato da unidade</span>
+              <span className="inline-flex items-center gap-2"><CheckCircle2 size={15} className="text-emerald-300" /> Unidades ativas</span>
+              <span className="inline-flex items-center gap-2"><LockKeyhole size={14} className="text-sky-300" /> Rede interna PM</span>
             </div>
           </div>
 
-          {confirmandoPdf && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4" role="dialog" aria-modal="true" aria-label="Confirmar download do PDF">
-              <div className="w-full max-w-[400px] rounded-[20px] border border-[#3c4043] bg-[#2b2c2f] p-6 text-left shadow-[0_8px_30px_rgba(0,0,0,.5)]">
-                <h3 className="text-[16px] font-medium text-[#e8eaed]">Baixar relatório em PDF?</h3>
-                <p className="mt-2 text-[13px] leading-5 text-[#9aa0a6]">O download do relatório LCM da OPM <strong className="font-medium text-[#e8eaed]">{inicio}</strong> começará imediatamente.</p>
-                <div className="mt-5 flex justify-end gap-2">
-                  <button onClick={() => setConfirmandoPdf(false)} className="inline-flex h-[40px] items-center justify-center rounded-[12px] border border-[#3c4043] bg-transparent px-5 text-[13px] font-medium text-[#e8eaed] transition hover:bg-[#303134] active:scale-[.98]">Não</button>
-                  <button onClick={() => void confirmarDownloadPdf()} className="inline-flex h-[40px] items-center justify-center rounded-[12px] bg-[#8ab4f8] px-5 text-[13px] font-medium text-[#202124] transition hover:bg-[#a8c7fa] active:scale-[.98]">Sim, baixar</button>
+          <div className="sipl-visual-card relative mx-auto hidden w-full max-w-[440px] lg:block" aria-hidden="true">
+            <div className="sipl-orbit sipl-orbit-outer" />
+            <div className="sipl-orbit sipl-orbit-inner" />
+            <div className="sipl-float-chip sipl-float-chip-top"><Activity size={15} /><span>Sistema de consulta</span><span className="sipl-chip-dot" /></div>
+            <div className="sipl-glass-panel relative z-10 mx-auto max-w-[350px] rounded-[30px] p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-sky-300/20 bg-sky-300/10 text-sky-200"><FileSearch size={23} /></div>
+                <span className="rounded-full border border-emerald-300/20 bg-emerald-300/[.08] px-3 py-1.5 text-[9px] font-bold uppercase tracking-[.18em] text-emerald-200">LCM • PDF</span>
+              </div>
+              <div className="mt-8 text-[10px] font-bold uppercase tracking-[.22em] text-slate-500">Fluxo de consulta</div>
+              <div className="mt-3 font-display text-[22px] font-semibold tracking-[-.04em] text-white">Da unidade ao relatório</div>
+              <div className="mt-6 space-y-4">
+                <div className="flex items-center gap-3">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-sky-300/10 text-sky-200"><Fingerprint size={16} /></span>
+                  <div className="flex-1"><div className="text-[11px] font-semibold text-slate-200">Identificar OPM</div><div className="mt-1 text-[10px] text-slate-500">Validação do código de 9 dígitos</div></div>
+                  <Check size={15} className="text-emerald-300" />
+                </div>
+                <div className="sipl-card-rule" />
+                <div className="flex items-center gap-3">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-300/10 text-indigo-200"><Database size={16} /></span>
+                  <div className="flex-1"><div className="text-[11px] font-semibold text-slate-200">Consultar no SIPL</div><div className="mt-1 text-[10px] text-slate-500">Relatório da rede interna</div></div>
+                  <ArrowUpRight size={15} className="text-slate-500" />
+                </div>
+                <div className="sipl-card-rule" />
+                <div className="flex items-center gap-3">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-300/10 text-emerald-200"><Filter size={16} /></span>
+                  <div className="flex-1"><div className="text-[11px] font-semibold text-slate-200">Filtrar materiais</div><div className="mt-1 text-[10px] text-slate-500">Visualização por categoria</div></div>
+                  <ArrowUpRight size={15} className="text-slate-500" />
                 </div>
               </div>
+              <div className="sipl-scan-line" />
             </div>
-          )}
+            <div className="sipl-float-chip sipl-float-chip-bottom"><span className="sipl-chip-dot" /><span>Interface pronta para consulta</span></div>
+          </div>
+        </section>
 
-          <footer className="mt-auto pb-6 pt-10 text-center text-[11px] text-[#80868b]">SIPL • Consulta LCM</footer>
-        </div>
+        <section className="sipl-panel sipl-enter rounded-[28px] p-4 sm:rounded-[32px] sm:p-6 lg:p-7">
+          <div className="flex flex-col gap-4 border-b border-white/[.07] pb-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3.5">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-sky-300/15 bg-sky-300/[.08] text-sky-200"><Search size={19} /></div>
+              <div>
+                <div className="text-[14px] font-semibold text-white">Identificação da unidade</div>
+                <div className="mt-1 text-[11px] text-slate-500">Informe o código completo da OPM para continuar.</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[.16em] text-slate-500"><span className="h-1.5 w-1.5 rounded-full bg-sky-300" /> Etapa 01 <ChevronRight size={12} /> Consulta</div>
+          </div>
+
+          <div className="mt-5 grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
+            <label className="block min-w-0 text-left">
+              <span className="mb-2 block text-[11px] font-bold uppercase tracking-[.14em] text-slate-400">Código da unidade</span>
+              <div className="sipl-input-wrap relative">
+                <div className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-slate-500"><Fingerprint size={17} /></div>
+                <input value={inicio} onChange={(event) => { const value = event.target.value.replace(/\D/g, "").slice(0, 9); setInicio(value); setErro(""); }} onKeyDown={(event) => { if (event.key === "Enter") void handleConsultar(); }} inputMode="numeric" maxLength={9} placeholder="Ex.: 201008220" aria-label="Código exato da OPM" className="sipl-input h-[58px] w-full rounded-2xl border border-white/10 bg-[#0a111d]/80 pl-12 pr-[70px] font-mono text-[16px] font-medium tracking-[.08em] text-white outline-none transition-all duration-300 placeholder:font-sans placeholder:text-[13px] placeholder:tracking-normal placeholder:text-slate-600 focus:border-sky-300/70 focus:ring-4 focus:ring-sky-300/10" />
+                <span className={"absolute right-3 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 font-mono text-[10px] " + (inicio.length === 9 ? "bg-emerald-300/10 text-emerald-200" : "bg-white/[.04] text-slate-500")}>{inicio.length}/9</span>
+              </div>
+              {inicio.length === 9 && <div className={"mt-3 flex items-start gap-2.5 rounded-2xl border px-3.5 py-3 text-left text-[12px] leading-5 " + (opmSelecionada ? "border-emerald-300/20 bg-emerald-300/[.06] text-emerald-100" : "border-amber-300/20 bg-amber-300/[.06] text-amber-100")}>{opmSelecionada ? <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-emerald-300" /> : <CircleHelp size={16} className="mt-0.5 shrink-0 text-amber-300" />}<span className="min-w-0 break-words">{opmSelecionada ? <><strong className="font-semibold">{opmSelecionada.codigo}</strong><span className="mx-2 opacity-40">/</span>{opmSelecionada.nome}</> : "Código não localizado entre as unidades ativas. Confira os nove dígitos."}</span></div>}
+            </label>
+            <button onClick={() => void handleConsultar()} disabled={carregando} className="sipl-primary-button inline-flex h-[58px] items-center justify-center gap-2.5 rounded-2xl px-6 text-[12px] font-bold tracking-[.01em] text-[#07111e] transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50 md:min-w-[245px]">
+              {carregando ? <><span className="h-4 w-4 animate-spin rounded-full border-2 border-slate-900/25 border-t-slate-900" /> Consultando SIPL</> : <>Confirmar e consultar <ArrowUpRight size={16} /></>}
+            </button>
+          </div>
+
+          {sugestoes.length > 0 && inicio.length < 5 && <div className="sipl-suggestions mt-3 overflow-hidden rounded-2xl border border-white/10 bg-[#0b1320]/95 text-left backdrop-blur-xl"><div className="flex items-center gap-2 px-4 py-3 text-[10px] font-bold uppercase tracking-[.17em] text-slate-500"><Search size={12} /> Unidades encontradas</div>{sugestoes.map((opm) => <button key={opm.codigo} type="button" onClick={() => { setInicio(opm.codigo); }} className="flex w-full items-center justify-between gap-4 border-t border-white/[.06] px-4 py-3.5 text-left transition-colors hover:bg-sky-300/[.06]"><span className="shrink-0 font-mono text-[12px] font-semibold text-sky-200">{opm.codigo}</span><span className="min-w-0 truncate text-[12px] text-slate-400">{opm.nome}</span><ChevronRight size={14} className="shrink-0 text-slate-600" /></button>)}</div>}
+          <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-[10px] leading-5 text-slate-500"><span className="inline-flex items-center gap-1.5"><LockKeyhole size={12} /> O código é enviado exatamente como informado.</span><span className="hidden h-1 w-1 rounded-full bg-slate-700 sm:block" /><span>Somente OPMs ativas na tabela são aceitas.</span></div>
+        </section>
+
+        {(tabelaErro || erro) && <div className="sipl-alert mt-4 flex items-start gap-3 rounded-2xl px-4 py-3.5 text-[12px] leading-5" role="alert"><CircleHelp size={17} className="mt-0.5 shrink-0" /><div>{tabelaErro && <p>{tabelaErro}</p>}{erro && <p>{erro}</p>}</div></div>}
+
+        <section className="mt-7 sm:mt-9">
+          <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <div className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[.2em] text-sky-200"><span className="h-1.5 w-1.5 rounded-full bg-sky-300" /> Etapa 02</div>
+              <h2 className="font-display text-[23px] font-semibold tracking-[-.045em] text-white sm:text-[28px]">Relatório LCM</h2>
+              <p className="mt-1.5 max-w-[600px] text-[12px] leading-5 text-slate-500">{relatorioUrl ? <>Relatório solicitado para a OPM <strong className="font-mono font-semibold text-slate-300">{inicio}</strong>. O conteúdo é retornado diretamente pelo SIPL.</> : "O relatório aparecerá aqui depois que você confirmar a unidade."}</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button onClick={() => void baixarPdfSipl()} disabled={!relatorioUrl || carregando || baixandoPdf} className="sipl-secondary-button inline-flex h-[43px] items-center justify-center gap-2 rounded-xl px-4 text-[11px] font-bold transition-all disabled:cursor-not-allowed disabled:opacity-35">{baixandoPdf ? <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-slate-500/40 border-t-sky-200" /> : <ArrowDownToLine size={15} />} Baixar PDF</button>
+              <button onClick={abrirRelatorio} disabled={!relatorioUrl || carregando} className="sipl-secondary-button inline-flex h-[43px] items-center justify-center gap-2 rounded-xl px-4 text-[11px] font-bold transition-all disabled:cursor-not-allowed disabled:opacity-35"><ExternalLink size={14} /> Abrir relatório</button>
+            </div>
+          </div>
+
+          {!relatorioUrl && <div className="sipl-empty-state flex min-h-[190px] flex-col items-center justify-center rounded-[26px] border border-dashed border-white/10 px-5 py-8 text-center">
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/[.08] bg-white/[.03] text-slate-500"><FileSearch size={22} strokeWidth={1.5} /></div>
+            <p className="text-[12px] font-semibold text-slate-300">Aguardando consulta</p>
+            <p className="mt-1.5 max-w-[320px] text-[11px] leading-5 text-slate-500">Confirme o código da OPM acima para abrir o relatório oficial do SIPL.</p>
+          </div>}
+
+          {relatorioUrl && (
+            <>
+              {(carregandoFiltros || categoriasDisponiveis.length > 0 || erroFiltros) && (
+                <div className="sipl-panel mb-4 rounded-[24px] p-4 sm:p-5">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-300/10 text-indigo-200"><Filter size={17} /></div>
+                      <div><div className="text-[12px] font-semibold text-white">Filtrar materiais</div><div className="mt-1 text-[10px] text-slate-500">{carregandoFiltros ? "Lendo o conteúdo do PDF..." : erroFiltros ? "O filtro automático não pôde ler este PDF." : "Categorias identificadas neste relatório."}</div></div>
+                    </div>
+                    {textoPdf && <span className="inline-flex items-center gap-1.5 self-start rounded-full border border-emerald-300/15 bg-emerald-300/[.06] px-3 py-1.5 text-[10px] font-semibold text-emerald-200 sm:self-auto"><CheckCircle2 size={12} /> {linhasFiltradas.length} linha(s)</span>}
+                  </div>
+                  {categoriasDisponiveis.length > 0 && <div className="mt-4 flex flex-wrap gap-2">{(["Todos", ...categoriasDisponiveis] as CategoriaMaterial[]).map((categoria) => <button key={categoria} type="button" onClick={() => setCategoriaAtiva(categoria)} className={"sipl-filter-chip inline-flex items-center gap-1.5 rounded-xl border px-3.5 py-2.5 text-[11px] font-semibold transition-all duration-200 " + (categoriaAtiva === categoria ? "sipl-filter-active" : "border-white/[.08] bg-white/[.025] text-slate-400 hover:border-sky-300/25 hover:bg-sky-300/[.05] hover:text-slate-200")}>{categoriaAtiva === categoria && <Check size={12} />}{categoria}</button>)}</div>}
+                  {erroFiltros && <p className="mt-3 text-[11px] leading-5 text-amber-200/80">{erroFiltros}</p>}
+                  {textoPdf && <div className="sipl-pdf-text mt-4 max-h-[360px] overflow-auto rounded-2xl border border-white/[.07] bg-[#080e18]/75 p-3">{linhasFiltradas.length > 0 ? <div className="space-y-0.5">{linhasFiltradas.map((linha, index) => <div key={index} className="border-b border-white/[.045] px-2.5 py-2 font-mono text-[10px] leading-5 text-slate-300 last:border-0">{linha}</div>)}</div> : <div className="px-2 py-8 text-center text-[11px] text-slate-500">Nenhum item encontrado nesta categoria.</div>}</div>}
+                </div>
+              )}
+              <div className="sipl-pdf-frame overflow-hidden rounded-[24px] border border-white/[.12] bg-[#111827]">
+                <div className="flex items-center justify-between gap-3 border-b border-white/[.08] bg-white/[.025] px-4 py-3">
+                  <div className="flex items-center gap-2.5"><span className="flex h-7 w-7 items-center justify-center rounded-lg bg-rose-300/10 text-rose-200"><FileSearch size={14} /></span><div><div className="text-[10px] font-semibold text-slate-200">Visualizador SIPL</div><div className="mt-0.5 text-[9px] text-slate-500">Documento original • OPM {inicio}</div></div></div>
+                  <span className="rounded-full border border-white/[.08] px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[.12em] text-slate-500">PDF</span>
+                </div>
+                <iframe title={"Relatório LCM SIPL - " + inicio} src={relatorioUrl} className="h-[75vh] min-h-[560px] w-full border-0 bg-white sm:min-h-[680px]" />
+              </div>
+            </>
+          )}
+        </section>
+
+        <aside className="sipl-network-note mt-7 flex items-start gap-3.5 rounded-2xl px-4 py-4 sm:px-5">
+          <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-amber-300/10 text-amber-200"><LockKeyhole size={16} /></div>
+          <div><p className="text-[11px] font-bold text-amber-100">Uso exclusivo na rede CMDO / INTRANET</p><p className="mt-1 text-[11px] leading-5 text-slate-400">O relatório e o download dependem do acesso ao SIPL pela rede interna da Polícia Militar. Fora dessa rede, o documento pode não carregar.</p></div>
+        </aside>
+
+        {confirmandoPdf && (
+          <div className="sipl-modal-backdrop fixed inset-0 z-50 flex items-center justify-center px-4 py-8" role="dialog" aria-modal="true" aria-label="Confirmar download do PDF">
+            <div className="sipl-modal w-full max-w-[420px] rounded-[28px] p-6 text-left sm:p-7">
+              <div className="mb-5 flex items-start justify-between"><div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-300/10 text-sky-200"><ArrowDownToLine size={20} /></div><button onClick={() => setConfirmandoPdf(false)} aria-label="Fechar confirmação" className="rounded-xl p-2 text-slate-500 transition hover:bg-white/[.06] hover:text-white"><X size={17} /></button></div>
+              <h3 className="font-display text-[22px] font-semibold tracking-[-.04em] text-white">Baixar relatório?</h3>
+              <p className="mt-2 text-[12px] leading-6 text-slate-400">O arquivo PDF da OPM <strong className="font-mono text-slate-200">{inicio}</strong> será solicitado diretamente ao SIPL.</p>
+              <div className="mt-5 flex items-center gap-2 rounded-xl border border-white/[.07] bg-white/[.025] px-3.5 py-3 text-[10px] text-slate-400"><ShieldCheck size={15} className="shrink-0 text-emerald-300" /> Acesso limitado à disponibilidade da rede interna.</div>
+              <div className="mt-6 grid grid-cols-2 gap-2.5"><button onClick={() => setConfirmandoPdf(false)} className="sipl-secondary-button inline-flex h-11 items-center justify-center rounded-xl text-[11px] font-bold transition">Cancelar</button><button onClick={() => void confirmarDownloadPdf()} className="sipl-primary-button inline-flex h-11 items-center justify-center gap-2 rounded-xl text-[11px] font-bold text-[#07111e] transition"><ArrowDownToLine size={14} /> Sim, baixar</button></div>
+            </div>
+          </div>
+        )}
+
+        <footer className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-white/[.07] py-5 text-center sm:flex-row sm:text-left">
+          <div className="flex items-center gap-2 text-[10px] font-semibold tracking-[.05em] text-slate-500"><ShieldCheck size={14} className="text-sky-300/70" /> SIPL <span className="text-slate-700">/</span> Consulta LCM</div>
+          <div className="text-[10px] text-slate-600">Interface de consulta • Polícia Militar • Rede interna</div>
+        </footer>
       </div>
     </main>
   );
