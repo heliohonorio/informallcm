@@ -135,6 +135,7 @@ function Index() {
   const [erro, setErro] = useState("");
   const [carregando, setCarregando] = useState(false);
   const [confirmandoPdf, setConfirmandoPdf] = useState(false);
+  const [fallbackPdf, setFallbackPdf] = useState(false);
   const [baixandoPdf, setBaixandoPdf] = useState(false);
   const codigoOpm = inicio.length === 9 ? inicio : "";
   const opmSelecionada = useMemo(() => inicio.length === 9 ? opms.find((opm) => opm.codigo === codigoOpm) : undefined, [opms, codigoOpm]);
@@ -194,42 +195,37 @@ function Index() {
   }
 
   function baixarPdfSipl() {
-    if (!relatorioUrl) return;
-    setErro("");
-    setConfirmandoPdf(true);
+    if (!relatorioUrl || baixandoPdf) return;
+    // Tenta baixar na guia atual; só oferece nova guia se o download direto falhar.
+    void confirmarDownloadPdf();
   }
 
   async function confirmarDownloadPdf() {
     if (!relatorioUrl) return;
-    setConfirmandoPdf(false);
     setBaixandoPdf(true);
     setErro("");
     try {
-      // Tenta baixar o arquivo diretamente, sem abrir nova aba.
       const response = await fetch(relatorioUrl, { mode: "cors", credentials: "include" });
       if (!response.ok) throw new Error("HTTP " + response.status);
       const blob = await response.blob();
+      if (!blob.size) throw new Error("Arquivo vazio");
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = url;
       anchor.download = "Consulta-LCM-" + inicio + ".pdf";
+      anchor.style.display = "none";
       document.body.appendChild(anchor);
       anchor.click();
       anchor.remove();
       setTimeout(() => URL.revokeObjectURL(url), 5000);
     } catch {
-      // Fallback: link de download direto (sem nova aba).
-      const anchor = document.createElement("a");
-      anchor.href = relatorioUrl;
-      anchor.download = "Consulta-LCM-" + inicio + ".pdf";
-      document.body.appendChild(anchor);
-      anchor.click();
-      anchor.remove();
+      // Mantém o SIPL aberto e pede autorização antes de abrir outra guia.
+      setFallbackPdf(true);
+      setConfirmandoPdf(true);
     } finally {
       setBaixandoPdf(false);
     }
   }
-
   function abrirRelatorio() {
     if (!relatorioUrl) return;
     window.open(relatorioUrl, "_blank", "noopener,noreferrer");
@@ -385,10 +381,10 @@ function Index() {
           <div className="sipl-modal-backdrop fixed inset-0 z-50 flex items-center justify-center px-4 py-8" role="dialog" aria-modal="true" aria-label="Confirmar download do PDF">
             <div className="sipl-modal w-full max-w-[420px] rounded-[28px] p-6 text-left sm:p-7">
               <div className="mb-5 flex items-start justify-between"><div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-300/10 text-sky-200"><ArrowDownToLine size={20} /></div><button onClick={() => setConfirmandoPdf(false)} aria-label="Fechar confirmação" className="rounded-xl p-2 text-slate-500 transition hover:bg-white/[.06] hover:text-white"><X size={17} /></button></div>
-              <h3 className="font-display text-[22px] font-semibold tracking-[-.04em] text-white">Baixar relatório?</h3>
-              <p className="mt-2 text-[12px] leading-6 text-slate-400">O arquivo PDF da OPM <strong className="font-mono text-slate-200">{inicio}</strong> será solicitado diretamente ao SIPL.</p>
+              <h3 className="font-display text-[22px] font-semibold tracking-[-.04em] text-white">{fallbackPdf ? "Abrir download em nova guia?" : "Baixar relatório?"}</h3>
+              <p className="mt-2 text-[12px] leading-6 text-slate-400">{fallbackPdf ? <>Não foi possível iniciar o download direto. Para continuar sem sair do SIPL, confirme a abertura do relatório da OPM <strong className="font-mono text-slate-200">{inicio}</strong> em uma nova guia.</> : <>O arquivo PDF da OPM <strong className="font-mono text-slate-200">{inicio}</strong> será solicitado diretamente ao SIPL.</>}</p>
               <div className="mt-5 flex items-center gap-2 rounded-xl border border-white/[.07] bg-white/[.025] px-3.5 py-3 text-[10px] text-slate-400"><ShieldCheck size={15} className="shrink-0 text-emerald-300" /> Acesso limitado à disponibilidade da rede interna.</div>
-              <div className="mt-6 grid grid-cols-2 gap-2.5"><button onClick={() => setConfirmandoPdf(false)} className="sipl-secondary-button inline-flex h-11 items-center justify-center rounded-xl text-[11px] font-bold transition">Cancelar</button><button onClick={() => void confirmarDownloadPdf()} className="sipl-primary-button inline-flex h-11 items-center justify-center gap-2 rounded-xl text-[11px] font-bold text-[#07111e] transition"><ArrowDownToLine size={14} /> Sim, baixar</button></div>
+              <div className="mt-6 grid grid-cols-2 gap-2.5"><button onClick={() => { setConfirmandoPdf(false); setFallbackPdf(false); }} className="sipl-secondary-button inline-flex h-11 items-center justify-center rounded-xl text-[11px] font-bold transition">Cancelar</button><button onClick={() => { if (fallbackPdf && relatorioUrl) window.open(relatorioUrl, "_blank", "noopener,noreferrer"); setConfirmandoPdf(false); setFallbackPdf(false); }} className="sipl-primary-button inline-flex h-11 items-center justify-center gap-2 rounded-xl text-[11px] font-bold text-[#07111e] transition">{fallbackPdf ? <><ExternalLink size={14} /> Abrir em nova guia</> : <><ArrowDownToLine size={14} /> Sim, baixar</>}</button></div>
             </div>
           </div>
         )}
