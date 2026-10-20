@@ -508,7 +508,7 @@ function Index() {
               <div>Criado por: Sd PM Filho</div>
               <div>Diretoria de Logística • Setor de Auditoria e Sistemas</div>
             </div>
-            <div className="flex shrink-0 items-center justify-center gap-2 text-[10px] text-[#334155]"><Activity size={13} className="shrink-0 text-[#334155]" /><span className="whitespace-nowrap">Visitas totais</span><img src="https://visitor-badge.one9x.com/badge?page_id=sipl-consulta-lcm&namespace=sipl&left_text=VISITAS&left_color=0b1320&right_color=334155" alt="Contador total de visitas do SIPL" loading="eager" referrerPolicy="no-referrer" className="h-5 opacity-80" /></div>
+            <div className="flex shrink-0 items-center justify-center gap-2 text-[10px] text-[#334155]"><Activity size={13} className="shrink-0 text-[#334155]" /><span className="whitespace-nowrap">Visitas totais</span><img src="https://visitor-badge.one9x.com/badge?page_id=sipl-consulta-lcm-20261020&namespace=sipl&left_text=VISITAS&left_color=0b1320&right_color=334155" alt="Contador total de visitas do SIPL" loading="eager" referrerPolicy="no-referrer" className="h-5 opacity-80" /></div>
           </div>
         </footer>
       </div>
