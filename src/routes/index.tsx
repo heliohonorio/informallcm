@@ -129,7 +129,22 @@ async function carregarTabelaOpm(): Promise<OpmRecord[]> {
 
 function Index() {
   const [opms, setOpms] = useState<OpmRecord[]>([]);
-  const [avisoRedeAberto, setAvisoRedeAberto] = useState(true);
+  const [avisoRedeAberto, setAvisoRedeAberto] = useState(false);
+  useEffect(() => {
+    try {
+      setAvisoRedeAberto(window.localStorage.getItem("sipl-aviso-rede-v1") !== "lido");
+    } catch {
+      setAvisoRedeAberto(true);
+    }
+  }, []);
+  function fecharAvisoRede() {
+    try {
+      window.localStorage.setItem("sipl-aviso-rede-v1", "lido");
+    } catch {
+      // Sem armazenamento disponível, o aviso será exibido novamente na próxima visita.
+    }
+    setAvisoRedeAberto(false);
+  }
   const [tabelaErro, setTabelaErro] = useState("");
   const [inicio, setInicio] = useState("");
   const [indiceSugestao, setIndiceSugestao] = useState(0);
@@ -279,7 +294,7 @@ function Index() {
       {avisoRedeAberto && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#030814]/85 p-4 backdrop-blur-sm" role="presentation">
           <section role="dialog" aria-modal="true" aria-labelledby="sipl-aviso-rede-titulo" aria-describedby="sipl-aviso-rede-descricao" className="relative w-full max-w-[490px] rounded-3xl border border-sky-300/20 bg-[#101b2c] p-5 text-slate-100 shadow-2xl shadow-black/60 sm:p-7">
-            <button type="button" onClick={() => setAvisoRedeAberto(false)} aria-label="Fechar aviso e acessar o sistema" autoFocus className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/[.06] text-slate-300 transition-colors hover:bg-white/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-300"><X size={19} /></button>
+            <button type="button" onClick={fecharAvisoRede} aria-label="Fechar aviso e acessar o sistema" autoFocus className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/[.06] text-slate-300 transition-colors hover:bg-white/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-300"><X size={19} /></button>
             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-300/10 text-sky-200"><LockKeyhole size={23} /></div>
             <h2 id="sipl-aviso-rede-titulo" className="pr-8 text-xl font-bold tracking-tight text-white">Acesso à rede interna</h2>
             <p id="sipl-aviso-rede-descricao" className="mt-2 text-[13px] leading-6 text-slate-300">Para abrir os relatórios do SIPL, o navegador pode pedir autorização para acessar a rede local.</p>
