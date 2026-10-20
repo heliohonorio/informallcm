@@ -129,6 +129,7 @@ async function carregarTabelaOpm(): Promise<OpmRecord[]> {
 
 function Index() {
   const [opms, setOpms] = useState<OpmRecord[]>([]);
+  const [avisoRedeAberto, setAvisoRedeAberto] = useState(true);
   const [tabelaErro, setTabelaErro] = useState("");
   const [inicio, setInicio] = useState("");
   const [indiceSugestao, setIndiceSugestao] = useState(0);
@@ -274,6 +275,25 @@ function Index() {
     window.open(relatorioUrl, "_blank", "noopener,noreferrer");
   }
   return (
+    <>
+      {avisoRedeAberto && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#030814]/85 p-4 backdrop-blur-sm" role="presentation">
+          <section role="dialog" aria-modal="true" aria-labelledby="sipl-aviso-rede-titulo" aria-describedby="sipl-aviso-rede-descricao" className="relative w-full max-w-[490px] rounded-3xl border border-sky-300/20 bg-[#101b2c] p-5 text-slate-100 shadow-2xl shadow-black/60 sm:p-7">
+            <button type="button" onClick={() => setAvisoRedeAberto(false)} aria-label="Fechar aviso e acessar o sistema" autoFocus className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/[.06] text-slate-300 transition-colors hover:bg-white/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-300"><X size={19} /></button>
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-300/10 text-sky-200"><LockKeyhole size={23} /></div>
+            <h2 id="sipl-aviso-rede-titulo" className="pr-8 text-xl font-bold tracking-tight text-white">Acesso à rede interna</h2>
+            <p id="sipl-aviso-rede-descricao" className="mt-2 text-[13px] leading-6 text-slate-300">Para abrir os relatórios do SIPL, o navegador pode pedir autorização para acessar a rede local.</p>
+            <div className="mt-5 rounded-2xl border border-white/10 bg-[#e9eef5] p-4 text-[#263346] shadow-inner" aria-label="Exemplo ilustrativo do aviso do navegador">
+              <div className="mb-2 flex items-center gap-2 text-[11px] font-semibold"><span className="flex h-5 w-5 items-center justify-center rounded-md bg-[#d7e5f7] text-[#3266a3]"><LockKeyhole size={12} /></span> Exemplo de aviso do navegador</div>
+              <p className="text-[13px] font-semibold leading-5">Permitir que este site acesse dispositivos na sua rede local?</p>
+              <div className="mt-3 flex justify-end gap-2 text-[11px] font-semibold"><span className="rounded-full border border-[#aebbd0] px-4 py-1.5">Bloquear</span><span className="rounded-full bg-[#2869c9] px-4 py-1.5 text-white">Permitir</span></div>
+            </div>
+            <p className="mt-4 text-[13px] leading-5 text-slate-300">Quando essa mensagem aparecer, clique em <strong className="text-sky-200">Permitir</strong> para que o relatório possa ser acessado.</p>
+            <p className="mt-2 text-[12px] leading-5 text-slate-400">Se já escolheu Bloquear, altere a permissão de rede local nas configurações do site no navegador e atualize a página.</p>
+            <p className="mt-5 border-t border-white/10 pt-3 text-right text-[11px] text-slate-400">Clique no <strong className="text-white">X</strong> acima para continuar.</p>
+          </section>
+        </div>
+      )}
     <main className="sipl-app relative min-h-screen overflow-hidden text-slate-100">
       <div className="sipl-ambient sipl-ambient-a" aria-hidden="true" />
       <div className="sipl-ambient sipl-ambient-b" aria-hidden="true" />
@@ -388,12 +408,6 @@ function Index() {
 
         {(tabelaErro || erro) && <div className="sipl-alert mt-4 flex items-start gap-3 rounded-2xl px-4 py-3.5 text-[12px] leading-5" role="alert"><CircleHelp size={17} className="mt-0.5 shrink-0" /><div>{tabelaErro && <p>{tabelaErro}</p>}{erro && <p>{erro}</p>}</div></div>}
 
-        <aside className="mt-4 rounded-xl border border-sky-300/20 bg-sky-300/[.04] px-4 py-3 text-[12px] leading-5 text-slate-300">
-          <p className="font-semibold text-sky-200">Permissão para acessar a rede interna</p>
-          <p className="mt-1">Ao consultar o relatório, o navegador pode perguntar se deseja permitir o acesso à rede local. Clique em <strong>Permitir</strong> para acessar o SIPL.</p>
-          <p className="mt-1 text-slate-400">Se você já clicou em Bloquear, abra as configurações do site no navegador (ícone ao lado do endereço), procure a permissão de acesso à rede local e altere para Permitir. Depois, atualize a página e consulte novamente. Caso essa opção não apareça, solicite orientação ao suporte de informática da unidade.</p>
-        </aside>
-
         {relatorioSolicitado && <section ref={relatorioRef} className="mt-7 scroll-mt-5 sm:mt-9">
           <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
@@ -484,5 +498,6 @@ function Index() {
         </footer>
       </div>
     </main>
+    </>
   );
 }
