@@ -136,6 +136,9 @@ function Index() {
   const inputOpmRef = useRef<HTMLInputElement>(null);
   const relatorioRef = useRef<HTMLElement>(null);
   const [relatorioUrl, setRelatorioUrl] = useState("");
+  const [opmConsultada, setOpmConsultada] = useState("");
+  const carregamentoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const consultaIdRef = useRef(0);
   const [relatorioSolicitado, setRelatorioSolicitado] = useState(false);
   const [erro, setErro] = useState("");
   const [carregando, setCarregando] = useState(false);
@@ -146,6 +149,7 @@ function Index() {
   const codigoOpm = inicio.length === 9 ? inicio : "";
   const opmSelecionada = useMemo(() => inicio.length === 9 ? opms.find((opm) => opm.codigo === codigoOpm) : undefined, [opms, codigoOpm]);
   const sugestoes = useMemo(() => inicio && inicio.length < 9 ? opms.filter((opm) => opm.codigo.startsWith(inicio)).slice(0, 8) : [], [opms, inicio]);
+  useEffect(() => () => { if (carregamentoTimerRef.current) clearTimeout(carregamentoTimerRef.current); }, []);
 
   useEffect(() => {
     const lista = sugestoesRef.current;
@@ -181,6 +185,7 @@ function Index() {
         // no-cors: a resposta é opaca, mas o pedido só chega ao servidor se houver
         // acesso real à rede interna. Falha de rede/DNS/timeout = sem intranet.
         await fetch(SIPL_LCM_URL, { mode: "no-cors", cache: "no-store", signal: controlador.signal });
+        // no-cors não permite confirmar autenticação nem o conteúdo retornado.
         if (!cancelado) setStatusIntranet("ok");
       } catch {
         if (!cancelado) setStatusIntranet("erro");
@@ -196,7 +201,11 @@ function Index() {
 
   function handleConsultar() {
     setErro("");
+    if (carregamentoTimerRef.current) clearTimeout(carregamentoTimerRef.current);
+    setCarregando(false);
     setRelatorioUrl("");
+    setRelatorioSolicitado(false);
+    setOpmConsultada("");
 
     if (!/^\d{9}$/.test(inicio)) {
       setErro("Digite o código exato da unidade com 9 dígitos.");
@@ -214,14 +223,21 @@ function Index() {
       return;
     }
 
+    const consultaId = ++consultaIdRef.current;
     setCarregando(true);
+    setOpmConsultada(inicio);
     setRelatorioSolicitado(true);
     setRelatorioUrl(url);
-    // Evita deixar o indicador preso caso o navegador não dispare onLoad para o PDF.
-    setTimeout(() => setCarregando(false), 20000);
+    // Tempo limite é uma indicação de espera, não confirmação do PDF.
+    carregamentoTimerRef.current = setTimeout(() => {
+      if (consultaIdRef.current === consultaId) setCarregando(false);
+    }, 20000);
   }
 
   function handleLimpar() {
+    consultaIdRef.current += 1;
+    if (carregamentoTimerRef.current) clearTimeout(carregamentoTimerRef.current);
+    setOpmConsultada("");
     setInicio("");
     setIndiceSugestao(0);
     setRelatorioUrl("");
@@ -252,7 +268,7 @@ function Index() {
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = url;
-      anchor.download = "Consulta-LCM-" + inicio + ".pdf";
+      anchor.download = "Consulta-LCM-" + opmConsultada + ".pdf";
       anchor.style.display = "none";
       document.body.appendChild(anchor);
       anchor.click();
@@ -265,6 +281,10 @@ function Index() {
     } finally {
       setBaixandoPdf(false);
     }
+  }
+  function finalizarCarregamento() {
+    if (carregamentoTimerRef.current) clearTimeout(carregamentoTimerRef.current);
+    setCarregando(false);
   }
   function abrirRelatorio() {
     if (!relatorioUrl) return;
@@ -293,7 +313,7 @@ function Index() {
               <span className="text-[10px] font-bold uppercase tracking-[.16em] text-slate-300 sm:hidden">{statusIntranet === "ok" ? "Intranet" : statusIntranet === "erro" ? "Sem intranet" : "Verificando"}</span>
             </div>
             <span className="max-w-[220px] text-right text-[9px] leading-[1.4] text-slate-500">
-              {statusIntranet === "ok" ? "Conexão com o SIPL verificada e ativa." : statusIntranet === "erro" ? "O SIPL não respondeu. Verifique se a máquina está conectada à intranet." : "Verificando a conexão com o SIPL..."}
+              {statusIntranet === "ok" ? "Rede interna alcançável; acesso ao relatório ainda não confirmado." : statusIntranet === "erro" ? "O SIPL não respondeu. Verifique se a máquina está conectada à intranet." : "Verificando a conexão com o SIPL..."}
             </span>
           </div>
         </header>
@@ -393,7 +413,7 @@ function Index() {
             <div>
               <div className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[.2em] text-sky-200"><span className="h-1.5 w-1.5 rounded-full bg-sky-300" /> Etapa 02</div>
               <h2 className="font-display text-[23px] font-semibold tracking-[-.045em] text-white sm:text-[28px]">Relatório LCM</h2>
-              <p className="mt-1.5 max-w-[600px] text-[12px] leading-5 text-slate-500">Relatório solicitado para a OPM <strong className="font-mono font-semibold text-slate-300">{inicio}</strong>. O conteúdo é retornado diretamente pelo sistema.</p>
+              <p className="mt-1.5 max-w-[600px] text-[12px] leading-5 text-slate-500">Relatório solicitado para a OPM <strong className="font-mono font-semibold text-slate-300">{opmConsultada}</strong>. O conteúdo é retornado diretamente pelo sistema.</p>
             </div>
             <div className="flex flex-wrap gap-2">
               <button onClick={() => setTutorialPdfAberto(true)} disabled={!relatorioUrl || carregando} className="sipl-secondary-button inline-flex h-[43px] items-center justify-center gap-2 rounded-xl px-4 text-[11px] font-bold transition-all disabled:cursor-not-allowed disabled:opacity-35">{baixandoPdf ? <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-slate-500/40 border-t-sky-200" /> : <ArrowDownToLine size={15} />} Baixar PDF</button>
@@ -405,12 +425,12 @@ function Index() {
             <>
               <div className="sipl-pdf-frame overflow-hidden rounded-[24px] border border-white/[.12] bg-[#111827]">
                 <div className="flex items-center justify-between gap-3 border-b border-white/[.08] bg-white/[.025] px-4 py-3">
-                  <div className="flex items-center gap-2.5"><span className="flex h-7 w-7 items-center justify-center rounded-lg bg-rose-300/10 text-rose-200"><FileSearch size={14} /></span><div><div className="text-[10px] font-semibold text-slate-200">Visualizador SIPL</div><div className="mt-0.5 text-[9px] text-slate-500">Documento original • OPM {inicio}</div></div></div>
+                  <div className="flex items-center gap-2.5"><span className="flex h-7 w-7 items-center justify-center rounded-lg bg-rose-300/10 text-rose-200"><FileSearch size={14} /></span><div><div className="text-[10px] font-semibold text-slate-200">Visualizador SIPL</div><div className="mt-0.5 text-[9px] text-slate-500">Documento original • OPM {opmConsultada}</div></div></div>
                   <span className="rounded-full border border-white/[.08] px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[.12em] text-slate-500">PDF</span>
                 </div>
                 <div className="relative">
                   {carregando && <div className="absolute inset-0 z-10 flex min-h-[560px] flex-col items-center justify-center gap-4 bg-[#0b1320] px-5 text-center sm:min-h-[680px]" role="status" aria-live="polite"><span className="h-10 w-10 animate-spin rounded-full border-[3px] border-sky-200/20 border-t-sky-200" /><p className="text-sm font-semibold text-white">Carregando relatório...</p><p className="max-w-sm text-xs leading-5 text-slate-400">Estamos aguardando o documento do sistema. Isso pode levar alguns segundos; mantenha esta página aberta.</p></div>}
-                  <iframe title={"Relatório LCM SIPL - " + inicio} src={relatorioUrl} onLoad={() => setCarregando(false)} className="h-[75vh] min-h-[560px] w-full border-0 bg-white sm:min-h-[680px]" />
+                  <iframe key={relatorioUrl} title={"Relatório LCM SIPL - " + opmConsultada} src={relatorioUrl} onLoad={finalizarCarregamento} className="h-[75vh] min-h-[560px] w-full border-0 bg-white sm:min-h-[680px]" />
                 </div>
               </div>
             </>
@@ -459,7 +479,7 @@ function Index() {
             <div className="sipl-modal w-full max-w-[420px] rounded-[28px] p-6 text-left sm:p-7">
               <div className="mb-5 flex items-start justify-between"><div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-300/10 text-sky-200"><ArrowDownToLine size={20} /></div><button onClick={() => setConfirmandoPdf(false)} aria-label="Fechar confirmação" className="rounded-xl p-2 text-slate-500 transition hover:bg-white/[.06] hover:text-white"><X size={17} /></button></div>
               <h3 className="font-display text-[22px] font-semibold tracking-[-.04em] text-white">{fallbackPdf ? "Abrir download em nova guia?" : "Baixar relatório?"}</h3>
-              <p className="mt-2 text-[12px] leading-6 text-slate-400">{fallbackPdf ? <>Não foi possível iniciar o download direto. Para continuar sem sair do SIPL, confirme a abertura do relatório da OPM <strong className="font-mono text-slate-200">{inicio}</strong> em uma nova guia.</> : <>O arquivo PDF da OPM <strong className="font-mono text-slate-200">{inicio}</strong> será solicitado diretamente ao SIPL.</>}</p>
+              <p className="mt-2 text-[12px] leading-6 text-slate-400">{fallbackPdf ? <>Não foi possível iniciar o download direto. Para continuar sem sair do SIPL, confirme a abertura do relatório da OPM <strong className="font-mono text-slate-200">{opmConsultada}</strong> em uma nova guia.</> : <>O arquivo PDF da OPM <strong className="font-mono text-slate-200">{opmConsultada}</strong> será solicitado diretamente ao SIPL.</>}</p>
               <div className="mt-5 flex items-center gap-2 rounded-xl border border-white/[.07] bg-white/[.025] px-3.5 py-3 text-[10px] text-slate-400"><ShieldCheck size={15} className="shrink-0 text-emerald-300" /> Acesso limitado à disponibilidade da rede interna.</div>
               <div className="mt-6 grid grid-cols-2 gap-2.5"><button onClick={() => { setConfirmandoPdf(false); setFallbackPdf(false); }} className="sipl-secondary-button inline-flex h-11 items-center justify-center rounded-xl text-[11px] font-bold transition">Cancelar</button><button onClick={() => { if (fallbackPdf && relatorioUrl) window.open(relatorioUrl, "_blank", "noopener,noreferrer"); setConfirmandoPdf(false); setFallbackPdf(false); }} className="sipl-primary-button inline-flex h-11 items-center justify-center gap-2 rounded-xl text-[11px] font-bold text-[#07111e] transition">{fallbackPdf ? <><ExternalLink size={14} /> Abrir em nova guia</> : <><ArrowDownToLine size={14} /> Sim, baixar</>}</button></div>
             </div>
