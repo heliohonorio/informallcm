@@ -174,29 +174,8 @@ function Index() {
     void carregarTabelaOpm().then(setOpms).catch((error) => setTabelaErro(error instanceof Error ? error.message : "Erro ao carregar a Tabela OPM."));
   }, []);
 
-  const [statusIntranet, setStatusIntranet] = useState<"verificando" | "ok" | "erro">("verificando");
-
-  useEffect(() => {
-    let cancelado = false;
-    async function verificarIntranet() {
-      const controlador = new AbortController();
-      const tempo = setTimeout(() => controlador.abort(), 7000);
-      try {
-        // no-cors: a resposta é opaca, mas o pedido só chega ao servidor se houver
-        // acesso real à rede interna. Falha de rede/DNS/timeout = sem intranet.
-        await fetch(SIPL_LCM_URL, { mode: "no-cors", cache: "no-store", signal: controlador.signal });
-        // no-cors não permite confirmar autenticação nem o conteúdo retornado.
-        if (!cancelado) setStatusIntranet("ok");
-      } catch {
-        if (!cancelado) setStatusIntranet("erro");
-      } finally {
-        clearTimeout(tempo);
-      }
-    }
-    void verificarIntranet();
-    const intervalo = setInterval(() => void verificarIntranet(), 60000);
-    return () => { cancelado = true; clearInterval(intervalo); };
-  }, []);
+  // Não consultar a intranet automaticamente: o navegador pode solicitar
+  // permissão de rede local antes de o usuário iniciar a consulta.
 
 
   function handleConsultar() {
@@ -312,13 +291,10 @@ function Index() {
           </a>
           <div className="flex flex-col items-end gap-1.5">
             <div className="flex items-center gap-2 rounded-full border border-white/10 bg-slate-900/55 px-3 py-2 backdrop-blur-xl sm:px-4">
-              <span className={"sipl-status-pulse h-2 w-2 rounded-full " + (statusIntranet === "ok" ? "bg-emerald-400" : statusIntranet === "erro" ? "bg-red-500" : "bg-amber-400")} />
-              <span className="hidden text-[10px] font-bold uppercase tracking-[.16em] text-slate-300 sm:inline">{statusIntranet === "ok" ? "Acesso à intranet" : statusIntranet === "erro" ? "Sem acesso à intranet" : "Verificando intranet"}</span>
-              <span className="text-[10px] font-bold uppercase tracking-[.16em] text-slate-300 sm:hidden">{statusIntranet === "ok" ? "Intranet" : statusIntranet === "erro" ? "Sem intranet" : "Verificando"}</span>
+              <span className="h-2 w-2 rounded-full bg-sky-300" />
+              <span className="text-[10px] font-bold uppercase tracking-[.12em] text-slate-300">Acesso à intranet</span>
             </div>
-            <span className="max-w-[220px] text-right text-[9px] leading-[1.4] text-slate-500">
-              {statusIntranet === "ok" ? "Rede interna alcançável; acesso ao relatório ainda não confirmado." : statusIntranet === "erro" ? "O SIPL não respondeu. Verifique se a máquina está conectada à intranet." : "Verificando a conexão com o SIPL..."}
-            </span>
+            <span className="max-w-[240px] text-right text-[10px] leading-[1.4] text-slate-400">A conexão será solicitada ao consultar o relatório.</span>
           </div>
         </header>
 
@@ -411,6 +387,12 @@ function Index() {
         </section>
 
         {(tabelaErro || erro) && <div className="sipl-alert mt-4 flex items-start gap-3 rounded-2xl px-4 py-3.5 text-[12px] leading-5" role="alert"><CircleHelp size={17} className="mt-0.5 shrink-0" /><div>{tabelaErro && <p>{tabelaErro}</p>}{erro && <p>{erro}</p>}</div></div>}
+
+        <aside className="mt-4 rounded-xl border border-sky-300/20 bg-sky-300/[.04] px-4 py-3 text-[12px] leading-5 text-slate-300">
+          <p className="font-semibold text-sky-200">Permissão para acessar a rede interna</p>
+          <p className="mt-1">Ao consultar o relatório, o navegador pode perguntar se deseja permitir o acesso à rede local. Clique em <strong>Permitir</strong> para acessar o SIPL.</p>
+          <p className="mt-1 text-slate-400">Se você já clicou em Bloquear, abra as configurações do site no navegador (ícone ao lado do endereço), procure a permissão de acesso à rede local e altere para Permitir. Depois, atualize a página e consulte novamente. Caso essa opção não apareça, solicite orientação ao suporte de informática da unidade.</p>
+        </aside>
 
         {relatorioSolicitado && <section ref={relatorioRef} className="mt-7 scroll-mt-5 sm:mt-9">
           <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
