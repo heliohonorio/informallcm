@@ -136,6 +136,9 @@ function Index() {
   const inputOpmRef = useRef<HTMLInputElement>(null);
   const relatorioRef = useRef<HTMLElement>(null);
   const [relatorioUrl, setRelatorioUrl] = useState("");
+  const [opmConsultada, setOpmConsultada] = useState("");
+  const carregamentoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const consultaIdRef = useRef(0);
   const [relatorioSolicitado, setRelatorioSolicitado] = useState(false);
   const [erro, setErro] = useState("");
   const [carregando, setCarregando] = useState(false);
@@ -146,6 +149,7 @@ function Index() {
   const codigoOpm = inicio.length === 9 ? inicio : "";
   const opmSelecionada = useMemo(() => inicio.length === 9 ? opms.find((opm) => opm.codigo === codigoOpm) : undefined, [opms, codigoOpm]);
   const sugestoes = useMemo(() => inicio && inicio.length < 9 ? opms.filter((opm) => opm.codigo.startsWith(inicio)).slice(0, 8) : [], [opms, inicio]);
+  useEffect(() => () => { if (carregamentoTimerRef.current) clearTimeout(carregamentoTimerRef.current); }, []);
 
   useEffect(() => {
     const lista = sugestoesRef.current;
@@ -181,6 +185,7 @@ function Index() {
         // no-cors: a resposta é opaca, mas o pedido só chega ao servidor se houver
         // acesso real à rede interna. Falha de rede/DNS/timeout = sem intranet.
         await fetch(SIPL_LCM_URL, { mode: "no-cors", cache: "no-store", signal: controlador.signal });
+        // no-cors não permite confirmar autenticação nem o conteúdo retornado.
         if (!cancelado) setStatusIntranet("ok");
       } catch {
         if (!cancelado) setStatusIntranet("erro");
@@ -196,10 +201,17 @@ function Index() {
 
   function handleConsultar() {
     setErro("");
+    if (carregamentoTimerRef.current) clearTimeout(carregamentoTimerRef.current);
+    setCarregando(false);
     setRelatorioUrl("");
+    setRelatorioSolicitado(false);
+    setOpmConsultada("");
+    setConfirmandoPdf(false);
+    setFallbackPdf(false);
+    consultaIdRef.current += 1;
 
     if (!/^\d{9}$/.test(inicio)) {
-      setErro("Digite o código exato da unidade com 9 dígitos.");
+      setErro("Informe o código da OPM com 9 dígitos, não o número do patrimônio.");
       return;
     }
 
@@ -214,14 +226,21 @@ function Index() {
       return;
     }
 
+    const consultaId = consultaIdRef.current;
     setCarregando(true);
+    setOpmConsultada(inicio);
     setRelatorioSolicitado(true);
     setRelatorioUrl(url);
-    // Evita deixar o indicador preso caso o navegador não dispare onLoad para o PDF.
-    setTimeout(() => setCarregando(false), 20000);
+    // Tempo limite é uma indicação de espera, não confirmação do PDF.
+    carregamentoTimerRef.current = setTimeout(() => {
+      if (consultaIdRef.current === consultaId) setCarregando(false);
+    }, 20000);
   }
 
   function handleLimpar() {
+    consultaIdRef.current += 1;
+    if (carregamentoTimerRef.current) clearTimeout(carregamentoTimerRef.current);
+    setOpmConsultada("");
     setInicio("");
     setIndiceSugestao(0);
     setRelatorioUrl("");
@@ -231,6 +250,7 @@ function Index() {
     setConfirmandoPdf(false);
     setFallbackPdf(false);
     setBaixandoPdf(false);
+    setTutorialPdfAberto(false);
     requestAnimationFrame(() => inputOpmRef.current?.focus());
   }
 
@@ -252,7 +272,7 @@ function Index() {
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = url;
-      anchor.download = "Consulta-LCM-" + inicio + ".pdf";
+      anchor.download = "Consulta-LCM-" + opmConsultada + ".pdf";
       anchor.style.display = "none";
       document.body.appendChild(anchor);
       anchor.click();
@@ -265,6 +285,10 @@ function Index() {
     } finally {
       setBaixandoPdf(false);
     }
+  }
+  function finalizarCarregamento() {
+    if (carregamentoTimerRef.current) clearTimeout(carregamentoTimerRef.current);
+    setCarregando(false);
   }
   function abrirRelatorio() {
     if (!relatorioUrl) return;
@@ -293,7 +317,7 @@ function Index() {
               <span className="text-[10px] font-bold uppercase tracking-[.16em] text-slate-300 sm:hidden">{statusIntranet === "ok" ? "Intranet" : statusIntranet === "erro" ? "Sem intranet" : "Verificando"}</span>
             </div>
             <span className="max-w-[220px] text-right text-[9px] leading-[1.4] text-slate-500">
-              {statusIntranet === "ok" ? "Conexão com o SIPL verificada e ativa." : statusIntranet === "erro" ? "O SIPL não respondeu. Verifique se a máquina está conectada à intranet." : "Verificando a conexão com o SIPL..."}
+              {statusIntranet === "ok" ? "Rede interna alcançável; acesso ao relatório ainda não confirmado." : statusIntranet === "erro" ? "O SIPL não respondeu. Verifique se a máquina está conectada à intranet." : "Verificando a conexão com o SIPL..."}
             </span>
           </div>
         </header>
@@ -310,10 +334,10 @@ function Index() {
               Consulta patrimonial
             </div>
             <h1 className="max-w-[690px] font-display text-[clamp(2.5rem,5.3vw,4.8rem)] font-semibold leading-[.99] tracking-[-.065em] text-white">
-              Encontre os patrimônios <span className="sipl-title-glow">da sua OPM.</span>
+              Consulte os materiais <span className="sipl-title-glow">da sua unidade.</span>
             </h1>
             <p className="mt-3 max-w-[550px] text-[14px] leading-6 text-slate-400 sm:text-[15px]">
-              Consulte o relatório LCM. Identifique a unidade, abra o documento e encontre os materiais com uma interface mais simples e objetiva.
+              Informe o código de 9 dígitos da sua OPM para consultar o relatório LCM. Não digite o número de patrimônio neste campo.
             </p>
             <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-[10px] font-medium text-slate-400">
               <span className="inline-flex items-center gap-2"><CheckCircle2 size={15} className="text-emerald-300" /> Código exato da unidade</span>
@@ -358,7 +382,7 @@ function Index() {
               <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-sky-300/15 bg-sky-300/[.08] text-sky-200"><Search size={19} /></div>
               <div>
                 <div className="text-[14px] font-semibold text-white">Identificação da unidade</div>
-                <div className="mt-1 text-[11px] text-slate-500">Informe o código completo da OPM para continuar.</div>
+                <div className="mt-1 text-[11px] text-slate-500">Digite o código da OPM (9 dígitos). Este campo não aceita número de patrimônio.</div>
               </div>
             </div>
             <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[.16em] text-slate-500"><span className="h-1.5 w-1.5 rounded-full bg-sky-300" /> Etapa 01 <ChevronRight size={12} /> Consulta</div>
@@ -366,10 +390,10 @@ function Index() {
 
           <div className="mt-3 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
             <label className="block min-w-0 text-left">
-              <span className="mb-2 block text-[11px] font-bold uppercase tracking-[.14em] text-slate-400">Código da unidade</span>
+              <span className="mb-2 block text-[11px] font-bold uppercase tracking-[.14em] text-slate-400">Código da OPM (não é patrimônio)</span>
               <div className="sipl-input-wrap relative">
                 <div className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-slate-500"><Fingerprint size={17} /></div>
-                <input ref={inputOpmRef} value={inicio} onChange={(event) => { const value = event.target.value.replace(/\D/g, "").slice(0, 9); setInicio(value); setIndiceSugestao(0); setErro(""); }} onKeyDown={(event) => { if (sugestoes.length > 0 && inicio.length < 9) { if (event.key === "ArrowDown") { event.preventDefault(); setIndiceSugestao((current) => Math.min(current + 1, sugestoes.length - 1)); return; } if (event.key === "ArrowUp") { event.preventDefault(); setIndiceSugestao((current) => Math.max(current - 1, 0)); return; } if (event.key === "Enter") { event.preventDefault(); const escolhida = sugestoes[Math.min(indiceSugestao, sugestoes.length - 1)]; if (escolhida) { setInicio(escolhida.codigo); setIndiceSugestao(0); setErro(""); } return; } } if (event.key === "Enter") void handleConsultar(); }} inputMode="numeric" maxLength={9} placeholder="Ex.: 601002000" aria-label="Código exato da OPM" aria-autocomplete="list" aria-controls="sipl-opm-suggestions" className="sipl-input h-[50px] w-full rounded-2xl border border-white/10 bg-[#0a111d]/80 pl-12 pr-[70px] font-mono text-[16px] font-medium tracking-[.08em] text-white outline-none transition-all duration-300 placeholder:font-sans placeholder:text-[13px] placeholder:tracking-normal placeholder:text-slate-600 focus:border-sky-300/70 focus:ring-4 focus:ring-sky-300/10" />
+                <input ref={inputOpmRef} value={inicio} onChange={(event) => { const value = event.target.value.replace(/\D/g, "").slice(0, 9); setInicio(value); setIndiceSugestao(0); setErro(""); }} onKeyDown={(event) => { if (sugestoes.length > 0 && inicio.length < 9) { if (event.key === "ArrowDown") { event.preventDefault(); setIndiceSugestao((current) => Math.min(current + 1, sugestoes.length - 1)); return; } if (event.key === "ArrowUp") { event.preventDefault(); setIndiceSugestao((current) => Math.max(current - 1, 0)); return; } if (event.key === "Enter") { event.preventDefault(); const escolhida = sugestoes[Math.min(indiceSugestao, sugestoes.length - 1)]; if (escolhida) { setInicio(escolhida.codigo); setIndiceSugestao(0); setErro(""); } return; } } if (event.key === "Enter") void handleConsultar(); }} inputMode="numeric" maxLength={9} placeholder="Código da OPM: 9 dígitos" aria-label="Código da OPM com nove dígitos, não número de patrimônio" aria-autocomplete="list" aria-controls="sipl-opm-suggestions" className="sipl-input h-[50px] w-full rounded-2xl border border-white/10 bg-[#0a111d]/80 pl-12 pr-[70px] font-mono text-[16px] font-medium tracking-[.08em] text-white outline-none transition-all duration-300 placeholder:font-sans placeholder:text-[13px] placeholder:tracking-normal placeholder:text-slate-600 focus:border-sky-300/70 focus:ring-4 focus:ring-sky-300/10" />
                 <span className={"absolute right-3 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 font-mono text-[10px] " + (inicio.length === 9 ? "bg-emerald-300/10 text-emerald-200" : "bg-white/[.04] text-slate-500")}>{inicio.length}/9</span>
               </div>
               {inicio.length === 9 && <div className={"mt-3 flex items-start gap-2.5 rounded-2xl border px-3.5 py-3 text-left text-[12px] leading-5 " + (opmSelecionada ? "border-emerald-300/20 bg-emerald-300/[.06] text-emerald-100" : "border-amber-300/20 bg-amber-300/[.06] text-amber-100")}>{opmSelecionada ? <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-emerald-300" /> : <CircleHelp size={16} className="mt-0.5 shrink-0 text-amber-300" />}<span className="min-w-0 break-words">{opmSelecionada ? <><strong className="font-semibold">{opmSelecionada.codigo}</strong><span className="mx-2 opacity-40">/</span>{opmSelecionada.nome}</> : "Código não localizado entre as unidades ativas. Confira os nove dígitos."}</span></div>}
@@ -383,7 +407,7 @@ function Index() {
           </div>
 
           {sugestoes.length > 0 && inicio.length < 9 && <div ref={sugestoesRef} id="sipl-opm-suggestions" role="listbox" aria-label="Unidades encontradas" className="sipl-suggestions mt-3 overflow-hidden rounded-2xl border border-white/10 bg-[#0b1320]/95 text-left backdrop-blur-xl"><div className="flex items-center gap-2 px-4 py-3 text-[10px] font-bold uppercase tracking-[.17em] text-slate-500"><Search size={12} /> Unidades encontradas <span className="ml-auto font-normal normal-case tracking-normal">↑↓ navegar · Enter selecionar</span></div>{sugestoes.map((opm, index) => <button key={opm.codigo} role="option" aria-selected={index === indiceSugestao} type="button" onMouseEnter={() => setIndiceSugestao(index)} onClick={() => { setInicio(opm.codigo); setIndiceSugestao(0); setErro(""); }} className={"flex w-full items-center justify-between gap-4 border-t border-white/[.06] px-4 py-3.5 text-left transition-colors " + (index === indiceSugestao ? "bg-sky-300/[.10] ring-1 ring-inset ring-sky-300/30" : "hover:bg-sky-300/[.06]")}><span className="shrink-0 font-mono text-[12px] font-semibold text-sky-200">{opm.codigo}</span><span className="min-w-0 truncate text-[12px] text-slate-400">{opm.nome}</span><ChevronRight size={14} className="shrink-0 text-slate-600" /></button>)}</div>}
-          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[9px] leading-4 text-slate-500"><span className="inline-flex items-center gap-1.5"><LockKeyhole size={12} /> O código é enviado exatamente como informado.</span><span className="hidden h-1 w-1 rounded-full bg-slate-700 sm:block" /><span>Somente OPMs ativas na tabela são aceitas.</span></div>
+          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[9px] leading-4 text-slate-500"><span className="inline-flex items-center gap-1.5"><LockKeyhole size={12} /> Informe somente o código da OPM, não o patrimônio.</span><span className="hidden h-1 w-1 rounded-full bg-slate-700 sm:block" /><span>Somente OPMs ativas na tabela são aceitas.</span></div>
         </section>
 
         {(tabelaErro || erro) && <div className="sipl-alert mt-4 flex items-start gap-3 rounded-2xl px-4 py-3.5 text-[12px] leading-5" role="alert"><CircleHelp size={17} className="mt-0.5 shrink-0" /><div>{tabelaErro && <p>{tabelaErro}</p>}{erro && <p>{erro}</p>}</div></div>}
@@ -393,7 +417,7 @@ function Index() {
             <div>
               <div className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[.2em] text-sky-200"><span className="h-1.5 w-1.5 rounded-full bg-sky-300" /> Etapa 02</div>
               <h2 className="font-display text-[23px] font-semibold tracking-[-.045em] text-white sm:text-[28px]">Relatório LCM</h2>
-              <p className="mt-1.5 max-w-[600px] text-[12px] leading-5 text-slate-500">Relatório solicitado para a OPM <strong className="font-mono font-semibold text-slate-300">{inicio}</strong>. O conteúdo é retornado diretamente pelo sistema.</p>
+              <p className="mt-1.5 max-w-[600px] text-[12px] leading-5 text-slate-500">Relatório solicitado para a OPM <strong className="font-mono font-semibold text-slate-300">{opmConsultada}</strong>. O conteúdo é retornado diretamente pelo sistema.</p>
             </div>
             <div className="flex flex-wrap gap-2">
               <button onClick={() => setTutorialPdfAberto(true)} disabled={!relatorioUrl || carregando} className="sipl-secondary-button inline-flex h-[43px] items-center justify-center gap-2 rounded-xl px-4 text-[11px] font-bold transition-all disabled:cursor-not-allowed disabled:opacity-35">{baixandoPdf ? <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-slate-500/40 border-t-sky-200" /> : <ArrowDownToLine size={15} />} Baixar PDF</button>
@@ -405,12 +429,12 @@ function Index() {
             <>
               <div className="sipl-pdf-frame overflow-hidden rounded-[24px] border border-white/[.12] bg-[#111827]">
                 <div className="flex items-center justify-between gap-3 border-b border-white/[.08] bg-white/[.025] px-4 py-3">
-                  <div className="flex items-center gap-2.5"><span className="flex h-7 w-7 items-center justify-center rounded-lg bg-rose-300/10 text-rose-200"><FileSearch size={14} /></span><div><div className="text-[10px] font-semibold text-slate-200">Visualizador SIPL</div><div className="mt-0.5 text-[9px] text-slate-500">Documento original • OPM {inicio}</div></div></div>
+                  <div className="flex items-center gap-2.5"><span className="flex h-7 w-7 items-center justify-center rounded-lg bg-rose-300/10 text-rose-200"><FileSearch size={14} /></span><div><div className="text-[10px] font-semibold text-slate-200">Visualizador SIPL</div><div className="mt-0.5 text-[9px] text-slate-500">Documento original • OPM {opmConsultada}</div></div></div>
                   <span className="rounded-full border border-white/[.08] px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[.12em] text-slate-500">PDF</span>
                 </div>
                 <div className="relative">
                   {carregando && <div className="absolute inset-0 z-10 flex min-h-[560px] flex-col items-center justify-center gap-4 bg-[#0b1320] px-5 text-center sm:min-h-[680px]" role="status" aria-live="polite"><span className="h-10 w-10 animate-spin rounded-full border-[3px] border-sky-200/20 border-t-sky-200" /><p className="text-sm font-semibold text-white">Carregando relatório...</p><p className="max-w-sm text-xs leading-5 text-slate-400">Estamos aguardando o documento do sistema. Isso pode levar alguns segundos; mantenha esta página aberta.</p></div>}
-                  <iframe title={"Relatório LCM SIPL - " + inicio} src={relatorioUrl} onLoad={() => setCarregando(false)} className="h-[75vh] min-h-[560px] w-full border-0 bg-white sm:min-h-[680px]" />
+                  <iframe key={relatorioUrl} title={"Relatório LCM SIPL - " + opmConsultada} src={relatorioUrl} onLoad={finalizarCarregamento} className="h-[75vh] min-h-[560px] w-full border-0 bg-white sm:min-h-[680px]" />
                 </div>
               </div>
             </>
@@ -459,7 +483,7 @@ function Index() {
             <div className="sipl-modal w-full max-w-[420px] rounded-[28px] p-6 text-left sm:p-7">
               <div className="mb-5 flex items-start justify-between"><div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-300/10 text-sky-200"><ArrowDownToLine size={20} /></div><button onClick={() => setConfirmandoPdf(false)} aria-label="Fechar confirmação" className="rounded-xl p-2 text-slate-500 transition hover:bg-white/[.06] hover:text-white"><X size={17} /></button></div>
               <h3 className="font-display text-[22px] font-semibold tracking-[-.04em] text-white">{fallbackPdf ? "Abrir download em nova guia?" : "Baixar relatório?"}</h3>
-              <p className="mt-2 text-[12px] leading-6 text-slate-400">{fallbackPdf ? <>Não foi possível iniciar o download direto. Para continuar sem sair do SIPL, confirme a abertura do relatório da OPM <strong className="font-mono text-slate-200">{inicio}</strong> em uma nova guia.</> : <>O arquivo PDF da OPM <strong className="font-mono text-slate-200">{inicio}</strong> será solicitado diretamente ao SIPL.</>}</p>
+              <p className="mt-2 text-[12px] leading-6 text-slate-400">{fallbackPdf ? <>Não foi possível iniciar o download direto. Para continuar sem sair do SIPL, confirme a abertura do relatório da OPM <strong className="font-mono text-slate-200">{opmConsultada}</strong> em uma nova guia.</> : <>O arquivo PDF da OPM <strong className="font-mono text-slate-200">{opmConsultada}</strong> será solicitado diretamente ao SIPL.</>}</p>
               <div className="mt-5 flex items-center gap-2 rounded-xl border border-white/[.07] bg-white/[.025] px-3.5 py-3 text-[10px] text-slate-400"><ShieldCheck size={15} className="shrink-0 text-emerald-300" /> Acesso limitado à disponibilidade da rede interna.</div>
               <div className="mt-6 grid grid-cols-2 gap-2.5"><button onClick={() => { setConfirmandoPdf(false); setFallbackPdf(false); }} className="sipl-secondary-button inline-flex h-11 items-center justify-center rounded-xl text-[11px] font-bold transition">Cancelar</button><button onClick={() => { if (fallbackPdf && relatorioUrl) window.open(relatorioUrl, "_blank", "noopener,noreferrer"); setConfirmandoPdf(false); setFallbackPdf(false); }} className="sipl-primary-button inline-flex h-11 items-center justify-center gap-2 rounded-xl text-[11px] font-bold text-[#07111e] transition">{fallbackPdf ? <><ExternalLink size={14} /> Abrir em nova guia</> : <><ArrowDownToLine size={14} /> Sim, baixar</>}</button></div>
             </div>
