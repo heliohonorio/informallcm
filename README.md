@@ -1,24 +1,36 @@
-# White Window Write
+# SIPL — Consulta LCM
 
-Janela Branca, escrito ok no centro.
+Interface para consultar o relatório LCM de materiais por código de OPM.
 
-This project was built with [Lovable](https://lovable.dev).
+## Como funciona
 
-## Build with Lovable
+O usuário informa o código completo da OPM (9 dígitos), seleciona uma unidade ativa e abre o relatório fornecido pelo SIPL. A lista de unidades é carregada do arquivo `public/tabela OPM.xlsx`.
 
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/c95405bc-3ae1-4c51-a69f-d4a68c570b1c).
+O relatório é servido pelo sistema interno da PMESP. Por isso, o acesso depende de uma conexão autorizada à intranet. A aplicação não mantém cópias dos relatórios.
 
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
+## Executar localmente
 
-## Development
+Requisitos: Node.js 22 e npm.
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
-
-```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
+```bash
+npm install
 npm run dev
 ```
+
+Para conferir a versão de produção:
+
+```bash
+npm run build
+npm run preview
+```
+
+## Publicação
+
+O workflow em `.github/workflows/deploy.yml` publica a versão da branch `main` no GitHub Pages após o build.
+
+## Cuidados ao alterar
+
+- Manter a validação de códigos de OPM com 9 dígitos.
+- Não modificar a URL do relatório interno sem verificar o funcionamento no SIPL.
+- Conferir pesquisa, seleção da unidade, limpeza do formulário, abertura do relatório e orientação para salvar PDF.
+- Validar o build antes de publicar mudanças.
