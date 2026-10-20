@@ -206,9 +206,12 @@ function Index() {
     setRelatorioUrl("");
     setRelatorioSolicitado(false);
     setOpmConsultada("");
+    setConfirmandoPdf(false);
+    setFallbackPdf(false);
+    consultaIdRef.current += 1;
 
     if (!/^\d{9}$/.test(inicio)) {
-      setErro("Digite o código exato da unidade com 9 dígitos.");
+      setErro("Informe o código da OPM com 9 dígitos, não o número do patrimônio.");
       return;
     }
 
@@ -223,7 +226,7 @@ function Index() {
       return;
     }
 
-    const consultaId = ++consultaIdRef.current;
+    const consultaId = consultaIdRef.current;
     setCarregando(true);
     setOpmConsultada(inicio);
     setRelatorioSolicitado(true);
@@ -247,6 +250,7 @@ function Index() {
     setConfirmandoPdf(false);
     setFallbackPdf(false);
     setBaixandoPdf(false);
+    setTutorialPdfAberto(false);
     requestAnimationFrame(() => inputOpmRef.current?.focus());
   }
 
@@ -330,10 +334,10 @@ function Index() {
               Consulta patrimonial
             </div>
             <h1 className="max-w-[690px] font-display text-[clamp(2.5rem,5.3vw,4.8rem)] font-semibold leading-[.99] tracking-[-.065em] text-white">
-              Encontre os patrimônios <span className="sipl-title-glow">da sua OPM.</span>
+              Consulte os materiais <span className="sipl-title-glow">da sua unidade.</span>
             </h1>
             <p className="mt-3 max-w-[550px] text-[14px] leading-6 text-slate-400 sm:text-[15px]">
-              Consulte o relatório LCM. Identifique a unidade, abra o documento e encontre os materiais com uma interface mais simples e objetiva.
+              Informe o código de 9 dígitos da sua OPM para consultar o relatório LCM. Não digite o número de patrimônio neste campo.
             </p>
             <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-[10px] font-medium text-slate-400">
               <span className="inline-flex items-center gap-2"><CheckCircle2 size={15} className="text-emerald-300" /> Código exato da unidade</span>
@@ -378,7 +382,7 @@ function Index() {
               <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-sky-300/15 bg-sky-300/[.08] text-sky-200"><Search size={19} /></div>
               <div>
                 <div className="text-[14px] font-semibold text-white">Identificação da unidade</div>
-                <div className="mt-1 text-[11px] text-slate-500">Informe o código completo da OPM para continuar.</div>
+                <div className="mt-1 text-[11px] text-slate-500">Digite o código da OPM (9 dígitos). Este campo não aceita número de patrimônio.</div>
               </div>
             </div>
             <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[.16em] text-slate-500"><span className="h-1.5 w-1.5 rounded-full bg-sky-300" /> Etapa 01 <ChevronRight size={12} /> Consulta</div>
@@ -386,10 +390,10 @@ function Index() {
 
           <div className="mt-3 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
             <label className="block min-w-0 text-left">
-              <span className="mb-2 block text-[11px] font-bold uppercase tracking-[.14em] text-slate-400">Código da unidade</span>
+              <span className="mb-2 block text-[11px] font-bold uppercase tracking-[.14em] text-slate-400">Código da OPM (não é patrimônio)</span>
               <div className="sipl-input-wrap relative">
                 <div className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-slate-500"><Fingerprint size={17} /></div>
-                <input ref={inputOpmRef} value={inicio} onChange={(event) => { const value = event.target.value.replace(/\D/g, "").slice(0, 9); setInicio(value); setIndiceSugestao(0); setErro(""); }} onKeyDown={(event) => { if (sugestoes.length > 0 && inicio.length < 9) { if (event.key === "ArrowDown") { event.preventDefault(); setIndiceSugestao((current) => Math.min(current + 1, sugestoes.length - 1)); return; } if (event.key === "ArrowUp") { event.preventDefault(); setIndiceSugestao((current) => Math.max(current - 1, 0)); return; } if (event.key === "Enter") { event.preventDefault(); const escolhida = sugestoes[Math.min(indiceSugestao, sugestoes.length - 1)]; if (escolhida) { setInicio(escolhida.codigo); setIndiceSugestao(0); setErro(""); } return; } } if (event.key === "Enter") void handleConsultar(); }} inputMode="numeric" maxLength={9} placeholder="Ex.: 601002000" aria-label="Código exato da OPM" aria-autocomplete="list" aria-controls="sipl-opm-suggestions" className="sipl-input h-[50px] w-full rounded-2xl border border-white/10 bg-[#0a111d]/80 pl-12 pr-[70px] font-mono text-[16px] font-medium tracking-[.08em] text-white outline-none transition-all duration-300 placeholder:font-sans placeholder:text-[13px] placeholder:tracking-normal placeholder:text-slate-600 focus:border-sky-300/70 focus:ring-4 focus:ring-sky-300/10" />
+                <input ref={inputOpmRef} value={inicio} onChange={(event) => { const value = event.target.value.replace(/\D/g, "").slice(0, 9); setInicio(value); setIndiceSugestao(0); setErro(""); }} onKeyDown={(event) => { if (sugestoes.length > 0 && inicio.length < 9) { if (event.key === "ArrowDown") { event.preventDefault(); setIndiceSugestao((current) => Math.min(current + 1, sugestoes.length - 1)); return; } if (event.key === "ArrowUp") { event.preventDefault(); setIndiceSugestao((current) => Math.max(current - 1, 0)); return; } if (event.key === "Enter") { event.preventDefault(); const escolhida = sugestoes[Math.min(indiceSugestao, sugestoes.length - 1)]; if (escolhida) { setInicio(escolhida.codigo); setIndiceSugestao(0); setErro(""); } return; } } if (event.key === "Enter") void handleConsultar(); }} inputMode="numeric" maxLength={9} placeholder="Código da OPM: 9 dígitos" aria-label="Código da OPM com nove dígitos, não número de patrimônio" aria-autocomplete="list" aria-controls="sipl-opm-suggestions" className="sipl-input h-[50px] w-full rounded-2xl border border-white/10 bg-[#0a111d]/80 pl-12 pr-[70px] font-mono text-[16px] font-medium tracking-[.08em] text-white outline-none transition-all duration-300 placeholder:font-sans placeholder:text-[13px] placeholder:tracking-normal placeholder:text-slate-600 focus:border-sky-300/70 focus:ring-4 focus:ring-sky-300/10" />
                 <span className={"absolute right-3 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 font-mono text-[10px] " + (inicio.length === 9 ? "bg-emerald-300/10 text-emerald-200" : "bg-white/[.04] text-slate-500")}>{inicio.length}/9</span>
               </div>
               {inicio.length === 9 && <div className={"mt-3 flex items-start gap-2.5 rounded-2xl border px-3.5 py-3 text-left text-[12px] leading-5 " + (opmSelecionada ? "border-emerald-300/20 bg-emerald-300/[.06] text-emerald-100" : "border-amber-300/20 bg-amber-300/[.06] text-amber-100")}>{opmSelecionada ? <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-emerald-300" /> : <CircleHelp size={16} className="mt-0.5 shrink-0 text-amber-300" />}<span className="min-w-0 break-words">{opmSelecionada ? <><strong className="font-semibold">{opmSelecionada.codigo}</strong><span className="mx-2 opacity-40">/</span>{opmSelecionada.nome}</> : "Código não localizado entre as unidades ativas. Confira os nove dígitos."}</span></div>}
@@ -403,7 +407,7 @@ function Index() {
           </div>
 
           {sugestoes.length > 0 && inicio.length < 9 && <div ref={sugestoesRef} id="sipl-opm-suggestions" role="listbox" aria-label="Unidades encontradas" className="sipl-suggestions mt-3 overflow-hidden rounded-2xl border border-white/10 bg-[#0b1320]/95 text-left backdrop-blur-xl"><div className="flex items-center gap-2 px-4 py-3 text-[10px] font-bold uppercase tracking-[.17em] text-slate-500"><Search size={12} /> Unidades encontradas <span className="ml-auto font-normal normal-case tracking-normal">↑↓ navegar · Enter selecionar</span></div>{sugestoes.map((opm, index) => <button key={opm.codigo} role="option" aria-selected={index === indiceSugestao} type="button" onMouseEnter={() => setIndiceSugestao(index)} onClick={() => { setInicio(opm.codigo); setIndiceSugestao(0); setErro(""); }} className={"flex w-full items-center justify-between gap-4 border-t border-white/[.06] px-4 py-3.5 text-left transition-colors " + (index === indiceSugestao ? "bg-sky-300/[.10] ring-1 ring-inset ring-sky-300/30" : "hover:bg-sky-300/[.06]")}><span className="shrink-0 font-mono text-[12px] font-semibold text-sky-200">{opm.codigo}</span><span className="min-w-0 truncate text-[12px] text-slate-400">{opm.nome}</span><ChevronRight size={14} className="shrink-0 text-slate-600" /></button>)}</div>}
-          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[9px] leading-4 text-slate-500"><span className="inline-flex items-center gap-1.5"><LockKeyhole size={12} /> O código é enviado exatamente como informado.</span><span className="hidden h-1 w-1 rounded-full bg-slate-700 sm:block" /><span>Somente OPMs ativas na tabela são aceitas.</span></div>
+          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[9px] leading-4 text-slate-500"><span className="inline-flex items-center gap-1.5"><LockKeyhole size={12} /> Informe somente o código da OPM, não o patrimônio.</span><span className="hidden h-1 w-1 rounded-full bg-slate-700 sm:block" /><span>Somente OPMs ativas na tabela são aceitas.</span></div>
         </section>
 
         {(tabelaErro || erro) && <div className="sipl-alert mt-4 flex items-start gap-3 rounded-2xl px-4 py-3.5 text-[12px] leading-5" role="alert"><CircleHelp size={17} className="mt-0.5 shrink-0" /><div>{tabelaErro && <p>{tabelaErro}</p>}{erro && <p>{erro}</p>}</div></div>}
